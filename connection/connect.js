@@ -1,5 +1,5 @@
 let fs = require("fs");
-let Accounts = require('web3-eth-accounts');
+let personal = require('web3-eth-personal');
 let Web3 = require('web3');
 
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
@@ -65,8 +65,9 @@ module.exports = {
         })
     }
 }
+ web3.eth.personal.newAccount("123");
 
-// console.log(web3.eth.personal.importRawKey("0x1c97328024d3d18505d90d61a4de5be6d85648b69b41c5a5bf94b566f96c80ba", "1234"));
+
 // console.log(newAccount)
 // autoCoin.deploy({
 //     data : bytecode,
