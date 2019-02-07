@@ -1,14 +1,14 @@
 let fs = require("fs");
-let personal = require('web3-eth-personal');
 let Web3 = require('web3');
+// import {Shh} from 'web3-shh';
+// let Shh = require('web3-shh')
+// const shh = new Shh('http://localhost:8545');
 
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const abi = fs.readFileSync(__dirname + '/autocoin.json');
 const bytecode = fs.readFileSync(__dirname + '/AutoCoin.txt', 'utf8').toString();
 
-const contract_address = "0x15F6cf73931095d7d5D271Da2D8Ffbb7ed77FEC6";
-
-web3.eth.defaultAccount = "0xC1de081e01F1A341473E3F1c9Ff3962D0D6Bd9b2";
+const contract_address = "0x52d6ebc160c05347d55c6c58a5c8352ae93bebac";
 // coinbase : defaultAccount : from address ( contract를 배포할 address)
 
 // autoCoin Setting
@@ -21,15 +21,27 @@ autoCoin.options.address = contract_address;            // contract 주소
 // autoCoin.options.gas = "";                           // 가스 limit
 
 module.exports = {
+
+    hasher : function(data){
+        console.log('hasher 접근');
+        let messagetoSign = web3.utils.sha3(data);
+        console.log(messagetoSign);
+
+        return messagetoSign;
+    },
+
     create_account : function(password, callback){
         console.log('web3, create_account 접근');
 
-        var newAccount = web3.eth.accounts.create(password);
-        callback(newAccount.address, newAccount.privateKey);
+        web3.eth.personal.newAccount(password, function (err, result) {
+            console.log(result)
+            callback(result);
+        })
     },
 
     // create SmartContract
-    deploy : function(){
+    deploy : function(address, password){
+        unlock_account(address, password)
         autoCoin.deploy({
         data : bytecode,
         }).send({
@@ -51,34 +63,135 @@ module.exports = {
         __itemCreateTime,
         __itemHash,
         callback) {
-        console.log("/web3, registItem 접근");
+        console.log('web3, registerItem 접근');
+        autoCoin.setProvider(web3.currentProvider);
+        var transfer = autoCoin.methods.registerItem(parseInt(__itemPrice), __itemLoc, __itemSize, __itemType, parseInt(__itemDuration), parseInt(__itemCreateTime), __itemHash);
+        var encodedABI = transfer.encodeABI();
+
+        var tx = {
+            from : address,
+            to : contract_address,
+            gas : 6721975,
+            data : encodedABI
+        };
+
+        web3.eth.accounts.signTransaction(tx, "0x13ba66f8bc43c7851249e742bd92ccc495b6aa75a6636fbc6e77176a5fdd3dfe").then(signed => {
+            var tran = web3.eth.sendSignedTransaction(signed.rawTransaction);
+            tran.on('confirmation', (confirmationNumber, receipt) => {
+                console.log('confirmation: ' + confirmationNumber);
+            });
+
+            tran.on('transactionHash', hash => {
+                console.log('hash');
+                console.log(hash);
+            });
+
+            tran.on('receipt', receipt => {
+                console.log('reciept');
+                console.log(receipt);
+                deliverOwnItem("0xec58179D7BD7CBEd4D1a76376A1c961C61548071", function (result) {
+                    callback(result);
+                })
+            });
+        });
+    },
+
+    DeliverItem : function (address, __itemSerial, callback) {
+        console.log('web3, DeliverItem 접근');
         autoCoin.setProvider(web3.currentProvider);
 
-        autoCoin.methods.registerItem(__itemPrice, __itemLoc, __itemSize, __itemType, __itemDuration, __itemCreateTime, __item16Byte).send({
-            from : address,
-            gas : 6721975
+        autoCoin.methods.dliverItem(__itemSerial).call({
+            from : address
         }, function (err, result) {
-            if (err) console.log(err);
-            else
-                console.log("registerItem_result : ", result);
-            return callback(result);
+            if(err) console.log(err);
+            else {
+                console.log('APP : ', result)
+                callback(result)
+            }
         })
     }
 }
- web3.eth.personal.newAccount("123");
+
+function unlock_account(account, password) {
+    console.log('web3, unlock_account 접근');
+
+    web3.eth.personal.unlockAccount(account, password, 600, function(err, result) {
+        if (err) {
+            console.log('비밀번호가 틀렸습니다 !');
+        } else {
+            console.log('Account Unlock 성공 !');
+        }
+    });
+}
+
+function deliverOwnItem(address, callback) {
+    console.log("deliverOwnItem 접근")
+    autoCoin.setProvider(web3.currentProvider);
+    autoCoin.methods.deliverOwnItem().call({
+        from : address
+    }, function (err, result) {
+        if(err) console.log(err);
+        else {
+            console.log('APP : ', result)
+            callback(result)
+        }
+    })
+}
+
+// var transfer = autoCoin.methods.registerItem(123, "sdasd", "asd", "asd", 123, 123, "0x8c18210df0d9514f2d2e5d8ca7c100978219ee80d3968ad850ab5ead208287b3");
+// var encodedABI = transfer.encodeABI();
+//
+// var tx = {
+//     from : "0xec58179D7BD7CBEd4D1a76376A1c961C61548071",
+//     to : contract_address,
+//     gas : 6721975,
+//     data : encodedABI
+// };
+//
+// web3.eth.accounts.signTransaction(tx, "0x13ba66f8bc43c7851249e742bd92ccc495b6aa75a6636fbc6e77176a5fdd3dfe").then(signed => {
+//     var tran = web3.eth.sendSignedTransaction(signed.rawTransaction);
+//     tran.on('confirmation', (confirmationNumber, receipt) => {
+//         console.log('confirmation: ' + confirmationNumber);
+//     });
+//
+//     tran.on('transactionHash', hash => {
+//         console.log('hash');
+//         console.log(hash);
+//     });
+//
+//     tran.on('receipt', receipt => {
+//         console.log('reciept');
+//         console.log(receipt);
+//     });
+//
+// });
+
+// { address: '0xB5F452Fd25E06f50d75c93C5967caAafB3A4dd56',
+//     privateKey:
+//     '0x706524b69997102fe4f505f8dae20de87a50f8bc0ada66d10dcda25c781be591',
+
+// var msg = "100"
+// // var temp = "\x19Ethereum Signed Message:\n" + msg.length + msg;
+// console.log(web3.utils.sha3(msg))
+// var signatureData = web3.eth.accounts.sign(msg, "0x706524b69997102fe4f505f8dae20de87a50f8bc0ada66d10dcda25c781be591");
+// console.log(signatureData)
+// console.log(web3.eth.accounts.recover("0xba463f38d2d1b6be660b783eceb51b835e336e7e2844402930bc83b58866cf56", "0x1c", "0x8e537f1fdfa2b42ffe6d6670b1b378541f41a99f2633cfe4220174cedc863cd4", "0x5454798c684bc1acaa8582f81483e73b49e212de7029718bbefc9976dd72b290"))
+// console.log(web3.eth.accounts.privateKeyToAccount("b99569fdff463634cfbef9606415139f7eab3a75aa751c26def391fcfe94fce2"))
+// var account = "0x5b7C0779F2241bdf429803F0aB63F6948B5aD095";
+// var sig = web3.eth.personal.sign(msg, account, )
+// var r = sig.substr(0,66)
+// var s = "0x" + sig.substr(66,64)
+// var v = 28
 
 
-// console.log(newAccount)
-// autoCoin.deploy({
-//     data : bytecode,
-// }).send({
-//     from : newAccount.address,
+// unlock_account(address, "1234");
+//
+// autoCoin.methods.registerItem(100, "123", "123", "123", 100, 100, "0xd898deb6b660a4d819b76775623f5fbb3c2d466422df5b6162e5c2c134aa9658").send({
+//     from : address,
 //     gas : 6721975
-// }).then(function (newContractInstance) {
-//     console.log(newContractInstance.options.address);
-//     smartcontract_address = newContractInstance;
+// }).on('confirmation', function(confirmationNumber, receipt){
+//     console.log(confirmationNumber)
 // })
-
 
 // 개인키로 부터 wallet 생성
 // var wallet1 = etherWallet.fromPrivateKey(Buffer.from('740b526ab7ebbe49735e446eb04ee01c954a9426b78acb76130d962ca5b3af1b', 'hex'));
@@ -90,10 +203,12 @@ module.exports = {
 
 // web3.util.sha3(data) 함수를 통해서 서명할 데이터의 hash값을 얻어 낸다.
 // web3.eth.accounts.sign(hash, privatekey) 함수를 통해서 데이터를 서명한다.
-// const messagetoSign = web3.utils.sha3('message');
+//const messagetoSign = web3.utils.sha3('message');
+//console.log(messagetoSign)
 //
 // // web3.eth.accounts.sign()을 통해 v,r,s 값을 포함한 객체값을 전달받는다.
 // var signatureData = web3.eth.accounts.sign(messagetoSign, wallet1.getPrivateKeyString());
+// var signatureData = web3.eth.accounts.sign("asd", wallet1.getPrivateKeyString());
 //
 // let signature = signatureData.signature;
 // // r,s : ECDSA(타원 곡선형 전자서명 알고리즘)의 signature
