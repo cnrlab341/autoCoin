@@ -143,12 +143,12 @@ contract ERC20_modify is IERC20 {
     }
 
     // chaneel depost
-    function deposit(address consumer, uint256 value) public {
+    function deposit(address consumer, uint256 value) internal {
         _balances[consumer] = _balances[consumer].sub(value);
     }
 
     // consumer Penelty
-    function Penelty(address consumer, address publisher, uint256 _deposit, uint256 fee) public {
+    function Penelty(address consumer, address publisher, uint256 _deposit, uint256 fee) internal {
         _balances[consumer] = _balances[consumer].add(_deposit.sub(fee));
         _balances[publisher] = _balances[publisher].add(fee);
     }
@@ -159,7 +159,7 @@ contract ERC20_modify is IERC20 {
     // }
 
     // chaneel complete
-    function complete(address publisher, uint256 value) public {
+    function complete(address publisher, uint256 value) internal {
         _balances[publisher] = _balances[publisher].add(value);
     }
 

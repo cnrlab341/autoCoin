@@ -170,9 +170,12 @@
                 console.log("message", message);
                 detailFile("detail", message);
             });
-          <%break;
-          }
-          }%>
+            <%break;%>
+          <%
+          case "complete" : %>
+           $("#title").html("complete");
+            $("#content").html("");
+            $("#result").html(""); <% break; }}%>
         })
 
         //detail

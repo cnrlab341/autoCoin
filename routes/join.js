@@ -12,14 +12,13 @@ var add = function (req, res){
     var name = req.body.name;
     var password = req.body.Password;
 
-    web3_connection.create_account(password, function (address, privateKey) {
+    web3_connection.create_account(password, function (address) {
         console.log("create_account address : ", address );
-        console.log("create_account privateKey : ", privateKey);
 
         // 계정 추가
-        accounts.set_accounts(name, address, privateKey);
+        accounts.set_accounts(name, address, password);
 
-        res.render('join.ejs',  {signal : "add", address : address, key : privateKey});
+        res.render('join.ejs',  {signal : "add", address : address});
     });
 }
 module.exports.join = join;

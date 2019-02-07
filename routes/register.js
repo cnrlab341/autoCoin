@@ -1,4 +1,5 @@
 var connection = require('../connection/connect');
+var database = require('../database/temp')
 
 var register = function (req, res) {
     console.log("register 접근");
@@ -17,10 +18,13 @@ var blockchain = function(req, res){
     var createTime = req.body.createTime;
     var hash = req.body.hash;
 
+
     connection.registerItem(address, itemprice, loc, size, type, duration, createTime, hash, function (result) {
         console.log("result : ", result);
 
-        res.render('register.ejs', {signal:null});
+        var r = result[result.length-1];
+        console.log("r", r)
+        res.render('register.ejs', {signal:"complete", result : r});
     })
 }
 

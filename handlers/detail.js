@@ -3,6 +3,7 @@ var accounts = require('../database/temp.js');
 var crypto = require('crypto');
 var algorithm = 'aes-256-cbc';
 var fs = require('fs');
+var connect = require('../connection/connect');
 
 function encrypt(buffer, password){
     let cipher = crypto.createCipher(algorithm,password)
@@ -24,7 +25,8 @@ function encryptAndHash(path, password, callback) {
         console.log(Buffer.byteLength(hw, 'utf8'))
         console.log(hw)
 
-        let hash = crypto.createHash('sha512').update(hw).digest('base64');
+
+        let hash = connect.hasher(hw);
         console.log("hash:",hash)
 
         callback(hash);
