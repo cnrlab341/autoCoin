@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./IERC20.sol";
+import "./SafeMath.sol";
 
 /**
  * @title Standard ERC20 token
@@ -154,7 +154,7 @@ contract ERC20_modify is IERC20 {
     }
 
     // // publisher Penelty
-    // function publisherPenelty(address consumer, address publisher, uint256 _deposit, uint256 fee) public{
+    // function publisherPenelty(address consumer, address publisher, uint256 _deposit, uint256 fee) internal{
     //     _balances[consumer] = _balances[consumer].add()
     // }
 
