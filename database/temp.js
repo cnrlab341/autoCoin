@@ -2,7 +2,7 @@
 var accounts = new Array();
 
 accounts.push({privateKey : "0x13ba66f8bc43c7851249e742bd92ccc495b6aa75a6636fbc6e77176a5fdd3dfe", address : "0xec58179D7BD7CBEd4D1a76376A1c961C61548071", password : "1234"})
-accounts.push({privateKey : "0x6c437e944ae018dfd5fb4db44b7c6a7e4e6450067ff3a9f2418a2b33878ab0c3", address : "0x46dFB25D41FE98f6e32Fbf61424EE8B5Dc91a02a", password : "1234"})
+accounts.push({privateKey : "0xae950f323a3155496625b2936f84750513488cd85e0ecc1b887dcd2f35999e84", address : "0x22FA6ea1e3AfE958b06115291791d70f71377e64", password : "1234"})
 
 module.exports.set_accounts = function (name, address, password) {
     accounts.push({name : name, address : address, password : password})

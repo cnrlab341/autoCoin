@@ -8,7 +8,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const abi = fs.readFileSync(__dirname + '/autocoin.json');
 const bytecode = fs.readFileSync(__dirname + '/AutoCoin.txt', 'utf8').toString();
 
-const contract_address = "0x52d6ebc160c05347d55c6c58a5c8352ae93bebac";
+var contract_address = "0x52d6EBc160C05347d55C6C58A5C8352ae93BEBAC";
 // coinbase : defaultAccount : from address ( contract를 배포할 address)
 
 // autoCoin Setting
@@ -89,7 +89,7 @@ module.exports = {
             tran.on('receipt', receipt => {
                 console.log('reciept');
                 console.log(receipt);
-                deliverOwnItem("0xec58179D7BD7CBEd4D1a76376A1c961C61548071", function (result) {
+                deliverOwnItem(address, function (result) {
                     callback(result);
                 })
             });
@@ -100,7 +100,7 @@ module.exports = {
         console.log('web3, DeliverItem 접근');
         autoCoin.setProvider(web3.currentProvider);
 
-        autoCoin.methods.dliverItem(__itemSerial).call({
+        autoCoin.methods.deliverItem(__itemSerial).call({
             from : address
         }, function (err, result) {
             if(err) console.log(err);
@@ -109,8 +109,95 @@ module.exports = {
                 callback(result)
             }
         })
-    }
+    },
+
+    createChannel : function (address, __deposit, __itemSerial, callback) {
+        console.log("web3, createChannel 접근");
+        console.log(__deposit);
+        console.log(address)
+        console.log(__itemSerial)
+        autoCoin.setProvider(web3.currentProvider);
+
+        var transfer = autoCoin.methods.createChannel(__deposit, __itemSerial);
+        var encodedABI = transfer.encodeABI();
+
+        var tx = {
+            from: address,
+            to: contract_address,
+            gas: 6721975,
+            data: encodedABI
+        };
+
+        web3.eth.accounts.signTransaction(tx, "0xae950f323a3155496625b2936f84750513488cd85e0ecc1b887dcd2f35999e84").then(signed => {
+            var tran = web3.eth.sendSignedTransaction(signed.rawTransaction);
+
+            tran.catch(function (error) {
+                console.log(error)
+            })
+            tran.on('confirmation', (confirmationNumber, receipt) => {
+                console.log('confirmation: ' + confirmationNumber);
+            });
+
+            tran.on('transactionHash', hash => {
+                console.log('hash');
+                console.log(hash);
+            });
+
+            tran.on('receipt', receipt => {
+                console.log('reciept');
+                console.log(receipt);
+                deliverOwnChannel(address, function (result) {
+                    callback(result);
+                })
+            });
+        });
+    },
+
+    DeliverChannel : function (address, __channelSerial, callback) {
+        console.log('web3, DeliverChannel 접근');
+        autoCoin.setProvider(web3.currentProvider);
+
+        autoCoin.methods.DeliverChannel(__channelSerial).call({
+            from : address
+        }, function (err, result) {
+            if(err) console.log(err);
+            else {
+                console.log('APP : ', result)
+                callback(result)
+            }
+        })
+    },
 }
+// 실행하시오!!
+// autoCoin.deploy({
+//     data : bytecode,
+// }).send({
+//     from : "0x5b7C0779F2241bdf429803F0aB63F6948B5aD095",
+//     gas : 6721975
+// }).then(function (newContractInstance) {
+//     console.log(newContractInstance.options.address);
+//     contract_address = newContractInstance;
+// })
+// 100토큰 전달
+// autoCoin.methods.transfer("0xec58179D7BD7CBEd4D1a76376A1c961C61548071", 100).send({
+//     from: "0x5b7C0779F2241bdf429803F0aB63F6948B5aD095",
+//     gas: 6721975
+// },function (err, result) {
+//     if(err) console.log('error', err)
+//     else{
+//         console.log("destory",result);
+//     }
+// });
+// autoCoin.methods.balanceOf("0x22FA6ea1e3AfE958b06115291791d70f71377e64").call({
+//     from : "0x22FA6ea1e3AfE958b06115291791d70f71377e64"
+// }, function (err, result) {
+//     if(err) console.log(err);
+//     else {
+//         console.log('APP : ', result)
+//     }
+// })
+
+
 
 function unlock_account(account, password) {
     console.log('web3, unlock_account 접근');
@@ -138,33 +225,22 @@ function deliverOwnItem(address, callback) {
     })
 }
 
-// var transfer = autoCoin.methods.registerItem(123, "sdasd", "asd", "asd", 123, 123, "0x8c18210df0d9514f2d2e5d8ca7c100978219ee80d3968ad850ab5ead208287b3");
-// var encodedABI = transfer.encodeABI();
-//
-// var tx = {
-//     from : "0xec58179D7BD7CBEd4D1a76376A1c961C61548071",
-//     to : contract_address,
-//     gas : 6721975,
-//     data : encodedABI
-// };
-//
-// web3.eth.accounts.signTransaction(tx, "0x13ba66f8bc43c7851249e742bd92ccc495b6aa75a6636fbc6e77176a5fdd3dfe").then(signed => {
-//     var tran = web3.eth.sendSignedTransaction(signed.rawTransaction);
-//     tran.on('confirmation', (confirmationNumber, receipt) => {
-//         console.log('confirmation: ' + confirmationNumber);
-//     });
-//
-//     tran.on('transactionHash', hash => {
-//         console.log('hash');
-//         console.log(hash);
-//     });
-//
-//     tran.on('receipt', receipt => {
-//         console.log('reciept');
-//         console.log(receipt);
-//     });
-//
-// });
+function deliverOwnChannel(address, callback) {
+    console.log("deliverOwnChannel 접근")
+    autoCoin.setProvider(web3.currentProvider);
+    autoCoin.methods.deliverOwnChannel().call({
+        from : address
+    }, function (err, result) {
+        if(err) console.log(err);
+        else {
+            console.log('APP : ', result)
+            callback(result)
+        }
+    })
+}
+
+
+
 
 // { address: '0xB5F452Fd25E06f50d75c93C5967caAafB3A4dd56',
 //     privateKey:

@@ -16,9 +16,13 @@ module.exports = {
         {file:'./register', path:'/register/blockchain', method:'blockchain', type:'post'},
 
         {file:'./search', path:'/search', method:'search', type:'get'},
+        {file:'./search', path:'/search/buy', method:'buy', type:'post'},
 
         //===== test =====//
-        {file:'./test', path:'/echo', method:'echo', type:'get'}
+        {file:'./test', path:'/echo', method:'echo', type:'get'},
+        {file:'./test', path:'/socket', method:'socket', type:'get'},
+
+        {file:'./mypage', path:'/mypage', method:'mypage', type:'get'}
         //===== User =====//
         // {file:'./user', path:'/process/login', method:'login', type:'post'}					    // user.login
         // ,{file:'./user', path:'/process/adduser', method:'adduser', type:'post'}				// user.adduser

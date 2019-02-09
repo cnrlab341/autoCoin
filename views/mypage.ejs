@@ -44,7 +44,7 @@
             <a class="nav-link" href="/search">검색</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/join">join</a>
+            <a class="nav-link" href="/mypage">mypage</a>
           </li>
         </ul>
       </div>
@@ -58,8 +58,8 @@
       <div class="row">
         <div class="col-lg-8 col-md-10 mx-auto">
           <div class="page-heading">
-            <h1>autoCoin</h1>
-            <span class="subheading">used blockChain, IPFS, off-chain</span>
+            <h1>myPage</h1>
+            <span class="subheading">address : <%= response.account%></span>
           </div>
         </div>
       </div>
@@ -69,26 +69,17 @@
     <div class="container">
       <div class="row">
         <div id="result" class="col-lg-8 col-md-10 mx-auto">
-          <form action="/join/add" method="post" name="sentMessage" id="contactForm" novalidate>
-            <div class="control-group">
-              <div class="form-group floating-label-form-group controls">
-                <label>Name</label>
-                <input type="text" class="form-control" placeholder="Name" id="name" name="name" required data-validation-required-message="Please enter your name.">
-                <p class="help-block text-danger"></p>
-              </div>
-            </div>
-            <div class="control-group">
-              <div class="form-group floating-label-form-group controls">
-                <label>password</label>
-                <input type="text" class="form-control" placeholder="Password" id="Password" name="Password" required data-validation-required-message="Please enter your Password.">
-                <p class="help-block text-danger"></p>
-              </div>
-            </div>
-            <br>
-            <div class="form-group">
-              <button type="submit" class="btn btn-primary" id="sendMessageButton">Send</button>
-            </div>
-          </form>
+          publisher : <%= response.publisher%> <br>
+          consumer : <%= response.consumer%> <br>
+          deposit : <%= response.deposoit%> <br>
+          duration : <%= response.duration%> day <br>
+          CreateTime : <%= response.createTime%> <br>
+          ItemSerial : <%= response.ItemSerial%> <br>
+          proofOfEncryption : <%= response.proofOfEncryption%> <br>
+          deliveredItemHash : <%= response.deliveredItemHash%> <br>
+          tempBalanceProof : <%= response.tempBalanceProof%> <br>
+          encryptionKey : <%= response.encryptionKey%> <br>
+          state : <%= response.state%> <br>
         </div>
       </div>
     </div>
@@ -142,16 +133,8 @@
 
     <!-- Custom scripts for this template -->
     <script src="../public/js/clean-blog.min.js"></script>
-    <script>
-
-      $(document).ready(function () {
-          <%if(signal=="add"){ %>
-            $("#result").html("address : <%= address%><br><br><a href='/'><button class='btn btn-primary'>index페이지 이동</button></a> ");
-          <%} %>
-      })
-
-    </script>
-
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="../public/js/socket.js"></script>
   </body>
 
 </html>

@@ -200,7 +200,16 @@ var server = http.createServer(app).listen(app.get('port'), function(){
     console.log("Express Listening at http://localhost:" + port);
 
 });
+var currentTime;
+var previousTime;
+var timeLate; // 시간 지연
 
+var login_ids = {};
+var proofOfEncryption;
+var remainingData;
+var blockCount;
+var pricePerBlock;
+var rest;
 // socket.io 서버를 시작합니다.
 var io = socketio.listen(server);
 console.log('socket.ejs.io 요청을 받아들일 준비가 됬습니다.');
@@ -212,5 +221,61 @@ io.sockets.on('connection', function (socket) {
     // 소켓 객체에 클라이언트 Host, Port 정보 속성으로 추가
     socket.remoteAddress = socket.request.connection._peername.address;
     socket.remotePort = socket.request.connection._peername.port;
-})
 
+    socket.on('setting', function (message) {
+        console.log("setting socket 접근");
+        console.log(message);
+
+        login_ids[message.from] = socket.id;
+        socket.login_id = message.from;
+
+        console.log("접속한 클라이언트 ID 개수 : %d", Object.keys(login_ids).length);
+
+        // block count 블록당 가격 체크
+        setting(message.deposit, function (blockCount, pricePerBlock, rest) {
+            console.log("setting 변수 : ", blockCount, pricePerBlock, rest);
+
+            blockCount = blockCount;
+            pricePerBlock = pricePerBlock;
+            rest = rest;
+
+            var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest, rest}
+
+            io.sockets.connected[login_ids[message.from]].emit('setting', output);
+            currentTime = Date.now();
+            previousTime = Number(currentTime);
+            console.log("Publisher URI request Time " + currentTime)
+        });
+        // sendResponse(socket, "setting", '200');
+
+    })
+});
+
+function sendResponse(socket, command, code) {
+    var obj = {command : command, code : code};
+    socket.emit('setting', obj);
+}
+
+function setting(deposit, callback) {
+   var path = 'uploads/0xC1de081e01F1A341473E3F1c9Ff3962D0D6Bd9b2_test.mp4';
+    fs.readFile(path, function (err, data) {
+        input = new Buffer(data);
+        // console.log(typeof (input))
+
+        proofOfEncryption = input.toString('base64', 0, 12);
+        console.log(proofOfEncryption) // 16, AAAAIGZ0eXBtcDQy
+
+        var temp = input.toString('base64', 12, input.length);
+        // console.log(remainingData)
+
+        // // 데이터 원하는 byte크기로 자르기
+        remainingData = temp.match(new RegExp('.{1,' + 16+ '}', 'g'));
+        console.log(remainingData.length)
+
+        var blockCount = remainingData.length + 1; // blockcount
+        var pricePerBlock = parseInt(deposit / remainingData.length); // 몫
+        var rest = deposit%remainingData.length; // 나머지
+        callback(blockCount, pricePerBlock, rest);
+
+    })
+}
