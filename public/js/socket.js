@@ -11,10 +11,10 @@ var id = 1001;
 var currentTime;
 var previousTime;
 var timeLate; // 시간 지연
-var state = 0; // 현재까지 진행한 거래 상태 저장
-var blockCount;
-var pricePerBlock;
-var rest;
+// var state = 0; // 현재까지 진행한 거래 상태 저장
+// var blockCount;
+// var pricePerBlock;
+// var rest;
 
 // var requstAck = 0;  // 진행중인 요청 데이터
 // var BP = 0;         // balanceProof
@@ -45,23 +45,27 @@ function connectToServer() {
         socket.emit('setting', output);
         currentTime = new Date();
         previousTime = Number(currentTime);
-        console.log("comsumer URI request Time " + currentTime.getTime())
         // publisher에게 block count와 pricePerBlock 획득
 
     });
     socket.on('setting', function (result) {
         currentTime = new Date();
         timeLate = Number(currentTime) - previousTime;
-        console.log(typeof timeLate)
-        console.log("comsumer URI response Time " + currentTime.getTime())
         console.log("1번째 timelate : ", timeLate + "ms")
-        console.log("client setting 접근");
-        blockCount = result.blockCount
-        pricePerBlock = result.pricePerBlock;
-        rest = result.rest;
 
-        calState("calState", id)
+        var message = {blockCount : result.blockCount, pricePerBlock : result.pricePerBlock, rest : result.rest, id : id,  timeLate : timeLate};
+
+        setInitialState("setInitialState", message)
     });
+
+    socket.on('submit', function (result) {
+        console.log("responseData : ", result);
+
+        currentTime = new Date();
+        var message = {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, newTime : Number(currentTime)};
+
+        calState("calState", message);
+    })
 
     socket.on('disconnect', function () {
         // println('웹 소켓 연결이 종료되었습니다.');
@@ -75,10 +79,34 @@ function setTimeLate(existingTime, newTime, callback) {
     callback(result);
 }
 
-function calState(method, id){
+function setInitialState(method, message) {
     $.jsonRPC.request(method, {
         id: id,
-        params: [id],
+        params: [message],
+        success: function(data) {
+            console.log('정상 응답을 받았습니다.');
+            console.log(data.result);
+            // id : id, , from : consumer
+            if(socket == undefined){
+                alert('Not connected to Publisher');
+                return;
+            }
+
+            var output = {requestAck: data.result.requestAck, BP : data.result.BP, id : data.result.id, from : consumer};
+
+            socket.emit('submit', output);
+        },
+        error: function(data) {
+            console.log('에러 응답을 받았습니다.');
+            console.dir(data);
+        }
+    });
+}
+
+function calState(method, message){
+    $.jsonRPC.request(method, {
+        id: message.id,
+        params: [message],
         success: function(data) {
             console.log('정상 응답을 받았습니다.');
             console.log(data.result);

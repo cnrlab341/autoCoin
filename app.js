@@ -40,6 +40,10 @@ const express = require('express')
     //클라이언트에서 ajax로 요청 시 CORS(다중 서버 접속) 지원
     var cors = require('cors');
 
+    // crypto algorithm
+    var crypto = require('crypto');
+    algorithm = 'aes-256-cbc';
+
 
 //===== 뷰 엔진 설정 =====//
 app.set('views', __dirname + '/views');
@@ -210,6 +214,8 @@ var remainingData;
 var blockCount;
 var pricePerBlock;
 var rest;
+var password = "NFd6N3v1nbL47FK0xpZjxZ7NY4fYpNYd";
+
 // socket.io 서버를 시작합니다.
 var io = socketio.listen(server);
 console.log('socket.ejs.io 요청을 받아들일 준비가 됬습니다.');
@@ -224,7 +230,7 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('setting', function (message) {
         console.log("setting socket 접근");
-        console.log(message);
+        console.log("message : ", message);
 
         login_ids[message.from] = socket.id;
         socket.login_id = message.from;
@@ -248,6 +254,32 @@ io.sockets.on('connection', function (socket) {
         });
         // sendResponse(socket, "setting", '200');
 
+    })
+
+    socket.on('submit', function (message) {
+        console.log("submit socket 접근");
+        console.log(message);
+
+        if(message.BP==0){
+            currentTime = Date.now();
+            timeLate = Number(currentTime) - previousTime;
+            console.log("1번째 timelate : ", timeLate +"ms");
+
+            encrypt(proofOfEncryption, function (result) {
+                var encryptionData = result.toString('base64');
+                console.log("proofOfEncryption : ", encryptionData);
+
+                var output = {responseBlk : 1, encryptionData : encryptionData, id : message.id }
+
+                if(login_ids[message.from]){
+                    io.sockets.connected[login_ids[message.from]].emit('submit', output);
+                }else{
+                    console.log("상대방을 찾을 수 없습니다.");
+                }
+            })
+        }else{
+
+        }
     })
 });
 
@@ -278,4 +310,15 @@ function setting(deposit, callback) {
         callback(blockCount, pricePerBlock, rest);
 
     })
+}
+
+function encrypt(buffer, callback){
+    var cipher = crypto.createCipheriv(algorithm, password, 'TestingIV1234567');
+    var crypted = Buffer.concat([cipher.update(buffer),cipher.final()]);
+    callback(crypted);
+}
+
+// 시간 지연 체크
+function checkTimeLate(){
+
 }

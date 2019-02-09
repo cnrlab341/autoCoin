@@ -10,6 +10,7 @@ var handler_info = [
     {file:'./echo', method:'echo'}					// echo
     , {file:'./detail', method:'detail'}
     , {file:'./socket', method:'calState'}
+    , {file:'./socket', method:'setInitialState'}
 ];
 
 
