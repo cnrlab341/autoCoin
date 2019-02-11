@@ -214,7 +214,10 @@ var remainingData;
 var blockCount;
 var pricePerBlock;
 var rest;
+var currentBP;
+var finalBP;
 var password = "NFd6N3v1nbL47FK0xpZjxZ7NY4fYpNYd";
+var submitData = require('./database/temp.js');
 
 // socket.io 서버를 시작합니다.
 var io = socketio.listen(server);
@@ -229,7 +232,7 @@ io.sockets.on('connection', function (socket) {
     socket.remotePort = socket.request.connection._peername.port;
 
     socket.on('setting', function (message) {
-        console.log("setting socket 접근");
+        // console.log("setting socket 접근");
         console.log("message : ", message);
 
         login_ids[message.from] = socket.id;
@@ -238,38 +241,40 @@ io.sockets.on('connection', function (socket) {
         console.log("접속한 클라이언트 ID 개수 : %d", Object.keys(login_ids).length);
 
         // block count 블록당 가격 체크
-        setting(message.deposit, function (blockCount, pricePerBlock, rest) {
-            console.log("setting 변수 : ", blockCount, pricePerBlock, rest);
+        setting(message.deposit, function (_blockCount, _pricePerBlock, _rest) {
+            console.log("setting 변수 -> blockCount : " +_blockCount + " // pricePerBlock : " + _pricePerBlock + " // rest : " + _rest);
 
-            blockCount = blockCount;
-            pricePerBlock = pricePerBlock;
-            rest = rest;
+            blockCount = _blockCount;
+            pricePerBlock = _pricePerBlock;
+            rest = _rest;
 
             var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest, rest}
 
             io.sockets.connected[login_ids[message.from]].emit('setting', output);
             currentTime = Date.now();
             previousTime = Number(currentTime);
-            console.log("Publisher URI request Time " + currentTime)
         });
         // sendResponse(socket, "setting", '200');
 
     })
 
     socket.on('submit', function (message) {
-        console.log("submit socket 접근");
-        console.log(message);
+        // console.log("submit socket 접근");
+        // console.log(message);
 
-        if(message.BP==0){
+        if(message.requestAck==0){
             currentTime = Date.now();
             timeLate = Number(currentTime) - previousTime;
-            console.log("1번째 timelate : ", timeLate +"ms");
+            submitData.setPublisherTimeLate(timeLate);
+            submitData.setPublisherPreviousTime(Number(currentTime));
+
+            console.log("Publisher " + "1번째 timelate : ", timeLate +"ms");
 
             encrypt(proofOfEncryption, function (result) {
                 var encryptionData = result.toString('base64');
-                console.log("proofOfEncryption : ", encryptionData);
 
-                var output = {responseBlk : 1, encryptionData : encryptionData, id : message.id }
+                var output = {responseBlk : 0, encryptionData : encryptionData, id : message.id }
+                console.log("resBlK   : ", 0);
 
                 if(login_ids[message.from]){
                     io.sockets.connected[login_ids[message.from]].emit('submit', output);
@@ -277,7 +282,53 @@ io.sockets.on('connection', function (socket) {
                     console.log("상대방을 찾을 수 없습니다.");
                 }
             })
+        }else if(message.requestAck==blockCount-1){
+            console.log("======== last BlK ========");
+
+            //timeLate 체크
+            currentTime = Date.now();
+            previousTime = submitData.getPublisherPreviousTime();
+            timeLate = submitData.getPublisherTimeLate();
+            calTimeLate(timeLate, previousTime, Number(currentTime));
+            finalBP = message.BP;
+
+            encrypt(remainingData[message.requestAck-1], function (result) {
+                var encryptionData = result.toString('base64');
+
+                var output = {responseBlk : message.requestAck, encryptionData : encryptionData, id : message.id }
+                console.log("resBlK   : ", message.requestAck);
+
+                if(login_ids[message.from]){
+                    io.sockets.connected[login_ids[message.from]].emit('last', output);
+                }else{
+                    console.log("상대방을 찾을 수 없습니다.");
+                }
+            })
+
+            // smartcontract BP 등록하고 channel complete -< 버튼으로 만들자,, 왜냐면 consumer가 등록해줘야 가능하기 때문
+
         }else{
+            //{requestAck: data.result.requestAck, BP : data.result.BP, id : data.result.id, from : consumer}
+
+            //timeLate 체크
+            currentTime = Date.now();
+            previousTime = submitData.getPublisherPreviousTime();
+            timeLate = submitData.getPublisherTimeLate();
+            calTimeLate(timeLate, previousTime, Number(currentTime));
+
+            currentBP = message.BP;
+            encrypt(remainingData[message.requestAck-1], function (result) {
+                var encryptionData = result.toString('base64');
+
+                var output = {responseBlk : message.requestAck, encryptionData : encryptionData, id : message.id }
+                console.log("resBlK   : ", message.requestAck);
+
+                if(login_ids[message.from]){
+                    io.sockets.connected[login_ids[message.from]].emit('submit', output);
+                }else{
+                    console.log("상대방을 찾을 수 없습니다.");
+                }
+            })
 
         }
     })
@@ -294,6 +345,8 @@ function setting(deposit, callback) {
         input = new Buffer(data);
         // console.log(typeof (input))
 
+        submitData.setDeposit(deposit);
+
         proofOfEncryption = input.toString('base64', 0, 12);
         console.log(proofOfEncryption) // 16, AAAAIGZ0eXBtcDQy
 
@@ -301,12 +354,12 @@ function setting(deposit, callback) {
         // console.log(remainingData)
 
         // // 데이터 원하는 byte크기로 자르기
-        remainingData = temp.match(new RegExp('.{1,' + 16+ '}', 'g'));
+        remainingData = temp.match(new RegExp('.{1,' + 10000+ '}', 'g'));
         console.log(remainingData.length)
 
         var blockCount = remainingData.length + 1; // blockcount
-        var pricePerBlock = parseInt(deposit / remainingData.length); // 몫
-        var rest = deposit%remainingData.length; // 나머지
+        var pricePerBlock = deposit / (remainingData.length -1); // 몫
+        var rest = deposit - blockCount * pricePerBlock; // 나머지
         callback(blockCount, pricePerBlock, rest);
 
     })
@@ -316,6 +369,20 @@ function encrypt(buffer, callback){
     var cipher = crypto.createCipheriv(algorithm, password, 'TestingIV1234567');
     var crypted = Buffer.concat([cipher.update(buffer),cipher.final()]);
     callback(crypted);
+}
+
+// 시간 지연 계산
+var count =2;
+function calTimeLate(existingTime, previousTime, newTime) {
+    var alpha = 0.2;
+    var temp = newTime - previousTime;
+
+    var newTimeLate = alpha * temp + (1-alpha) * existingTime;
+    submitData.setPublisherTimeLate(newTimeLate);
+    submitData.setPublisherPreviousTime(newTime);
+
+    console.log("Publisher " + count + "번째 timeLate : " + newTimeLate + "ms");
+    count ++;
 }
 
 // 시간 지연 체크

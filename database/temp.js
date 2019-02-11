@@ -12,42 +12,100 @@ module.exports.get_accounts = function () {
     return accounts;
 }
 
-// 0xec58179D7BD7CBEd4D1a76376A1c961C61548071정보
-// { version: 3,
-//     id: '1cf82130-0ec7-43b5-88fd-cea8cd7753ef',
-//     address: 'ec58179d7bd7cbed4d1a76376a1c961c61548071',
-//     crypto:
-//     { ciphertext:
-//         '864b1676cb31b4232b96e2fb2bba31068415ece21c781370ea4146b71b9d031a',
-//             cipherparams: { iv: 'cac53e16be12e41f7a912a7ef66078a2' },
-//         cipher: 'aes-128-ctr',
-//             kdf: 'scrypt',
-//         kdfparams:
-//         { dklen: 32,
-//             salt:
-//             'eba9a26abd13762b5c3ef1c3fd5269fd37b6c95ee7026d99f387e5390c6dee9f',
-//                 n: 8192,
-//             r: 8,
-//             p: 1 },
-//         mac:
-//             '0910242ffff082112ca1a0c1ec61c1e27ec5716a9d4b64ce173c7c42f6ae4da0' } }
 
-// 0x46dFB25D41FE98f6e32Fbf61424EE8B5Dc91a02a정보
-// { version: 3,
-//     id: '9e818467-8c1a-43b3-bfd4-f596c9a84427',
-//     address: '46dfb25d41fe98f6e32fbf61424ee8b5dc91a02a',
-//     crypto:
-//     { ciphertext:
-//         'eb4a6360fed27c9496ce776973ad4a05648fa37a924e8347087308e494fe0fd0',
-//             cipherparams: { iv: '097214fd572943cd7732b0029c9a55b7' },
-//         cipher: 'aes-128-ctr',
-//             kdf: 'scrypt',
-//         kdfparams:
-//         { dklen: 32,
-//             salt:
-//             '1b87f3a18a87711a652860e68a04ab099374219e0fd891ca9f64720110582e41',
-//                 n: 8192,
-//             r: 8,
-//             p: 1 },
-//         mac:
-//             '225f365890cf13aec5cc233af4e1dc0ec58d6df533c2133848caf4315810a0f3' } }
+var blockCount;
+var pricePerBlock;
+var rest;
+var proofOfEncryption;
+var encryptionData;
+var balance = 0;         // balanceProof
+var requestAck = 0;  // 진행중인 요청 데이터
+var BP;
+var clientPreviousTime;
+var publisherPreviousTime;
+var clientTimeLate; // 시간 지연
+var publisherTimeLate;
+var deposit;
+
+module.exports.setInitialdata = function (_blockCount, _pricePerBlock, _rest, _timeLate, _encryptionData, _balance, _requestAck, _previousTime) {
+    blockCount = _blockCount;
+    pricePerBlock = _pricePerBlock;
+    rest = _rest;
+    clientTimeLate= _timeLate;
+    encryptionData = _encryptionData;
+    balance = _balance;
+    requestAck = _requestAck;
+    clientPreviousTime = _previousTime;
+}
+
+module.exports.setProofOfEncryption = function (_proofOfEncryption) {
+    proofOfEncryption = _proofOfEncryption;
+}
+
+module.exports.setEncryptionData = function (newEncryptionData) {
+    encryptionData.push(newEncryptionData);
+}
+
+module.exports.setCalState = function (_requestAck, _balance, _timeLate){
+    requestAck = _requestAck;
+    balance = _balance;
+    timeLate = _timeLate;
+}
+
+module.exports.setClientPreviousTime = function(newPreviousTime){
+    clientPreviousTime = newPreviousTime;
+}
+
+module.exports.setClientTimeLate = function(newTimeLate){
+    clientTimeLate = newTimeLate;
+}
+
+module.exports.setPublisherPreviousTime = function(newPreviousTime){
+    publisherPreviousTime = newPreviousTime;
+}
+
+module.exports.setPublisherTimeLate = function(newTimeLate){
+    publisherTimeLate = newTimeLate;
+}
+
+module.exports.setDeposit = function(_deposit){
+    deposit = _deposit;
+}
+
+module.exports.getDeposit = function(){
+    return deposit;
+}
+
+module.exports.getRequestAck = function () {
+    return requestAck;
+}
+
+module.exports.getBlockCount = function () {
+    return blockCount;
+}
+
+module.exports.getClientTimeLate = function () {
+    return clientTimeLate;
+}
+
+module.exports.getClientPreviousTime = function () {
+    return clientPreviousTime;
+}
+
+module.exports.getPublisherTimeLate = function () {
+    return publisherTimeLate;
+}
+
+module.exports.getPublisherPreviousTime = function () {
+    return publisherPreviousTime;
+}
+
+module.exports.getBalance = function () {
+    return balance;
+}
+
+module.exports.getPricePerBlock = function () {
+    return pricePerBlock;
+}
+
+

@@ -51,9 +51,8 @@ function connectToServer() {
     socket.on('setting', function (result) {
         currentTime = new Date();
         timeLate = Number(currentTime) - previousTime;
-        console.log("1번째 timelate : ", timeLate + "ms")
 
-        var message = {blockCount : result.blockCount, pricePerBlock : result.pricePerBlock, rest : result.rest, id : id,  timeLate : timeLate};
+        var message = {blockCount : result.blockCount, pricePerBlock : result.pricePerBlock, rest : result.rest, id : id,  timeLate : timeLate, previousTime : Number(currentTime)};
 
         setInitialState("setInitialState", message)
     });
@@ -65,6 +64,17 @@ function connectToServer() {
         var message = {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, newTime : Number(currentTime)};
 
         calState("calState", message);
+    });
+
+    socket.on('last', function (result) {
+        console.log("lastData : ", result);
+
+        currentTime = new Date();
+        var message = {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, newTime : Number(currentTime)};
+
+
+        // 여기서 부터!!
+        calState("calState", message);
     })
 
     socket.on('disconnect', function () {
@@ -72,12 +82,6 @@ function connectToServer() {
     });
 
 };
-
-function setTimeLate(existingTime, newTime, callback) {
-    var alpha = 0.2;
-    var result = alpha * parseInt(newTime)+ (1-alpha) * parseInt(existingTime);
-    callback(result);
-}
 
 function setInitialState(method, message) {
     $.jsonRPC.request(method, {
@@ -93,7 +97,6 @@ function setInitialState(method, message) {
             }
 
             var output = {requestAck: data.result.requestAck, BP : data.result.BP, id : data.result.id, from : consumer};
-
             socket.emit('submit', output);
         },
         error: function(data) {
@@ -111,16 +114,15 @@ function calState(method, message){
             console.log('정상 응답을 받았습니다.');
             console.log(data.result);
 
-            address = data.result.address;
-            itemprice = data.result.Price;
-            loc = data.result.Loc;
-            size = data.result.File_Size;
-            duration = data.result.Duration;
-            createTime = data.result.Create_Date;
-            hash = data.result.hash;
+            if(socket == undefined){
+                alert('Not connected to Publisher');
+                return;
+            }
+            var output = {requestAck: data.result.requestAck, BP : data.result.BP, id : data.result.id, from : consumer};
 
-            address = data.result.address;
-        },
+            socket.emit('submit', output);
+
+            },
         error: function(data) {
             console.log('에러 응답을 받았습니다.');
             console.dir(data);

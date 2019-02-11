@@ -7,10 +7,10 @@
 console.log('handler_info 파일 로딩됨.');
 
 var handler_info = [
-    {file:'./echo', method:'echo'}					// echo
-    , {file:'./detail', method:'detail'}
-    , {file:'./socket', method:'calState'}
-    , {file:'./socket', method:'setInitialState'}
+    // {file:'./echo', method:'echo'}					// echo
+     {file:'./detail', method:'detail'}
+    , {file:'./calState', method:'calState'}
+    , {file:'./setInitialState', method:'setInitialState'}
 ];
 
 

@@ -8,7 +8,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const abi = fs.readFileSync(__dirname + '/autocoin.json');
 const bytecode = fs.readFileSync(__dirname + '/AutoCoin.txt', 'utf8').toString();
 
-var contract_address = "0x52d6EBc160C05347d55C6C58A5C8352ae93BEBAC";
+var contract_address = "0x65275E7E40d123563dE2b6658c701e9Bee3BC5C2";
 // coinbase : defaultAccount : from address ( contract를 배포할 address)
 
 // autoCoin Setting
@@ -167,6 +167,15 @@ module.exports = {
             }
         })
     },
+
+    createBP : function(address, balance, callback) {
+        // console.log("createBP접근");
+        // console.log(address, balance)
+        var balanceString = balance.toString();
+
+        var BP = web3.eth.accounts.sign(balanceString, "0x13ba66f8bc43c7851249e742bd92ccc495b6aa75a6636fbc6e77176a5fdd3dfe");
+        callback(BP);
+    }
 }
 // 실행하시오!!
 // autoCoin.deploy({
@@ -179,7 +188,7 @@ module.exports = {
 //     contract_address = newContractInstance;
 // })
 // 100토큰 전달
-// autoCoin.methods.transfer("0xec58179D7BD7CBEd4D1a76376A1c961C61548071", 100).send({
+// autoCoin.methods.transfer("0x22FA6ea1e3AfE958b06115291791d70f71377e64", 100).send({
 //     from: "0x5b7C0779F2241bdf429803F0aB63F6948B5aD095",
 //     gas: 6721975
 // },function (err, result) {
@@ -238,6 +247,8 @@ function deliverOwnChannel(address, callback) {
         }
     })
 }
+
+
 
 
 

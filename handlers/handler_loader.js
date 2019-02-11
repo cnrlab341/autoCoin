@@ -49,7 +49,7 @@ function initHandlers(jayson, app, api_path) {
     console.log('패스 [' + api_path + ']에서 RPC 호출을 라우팅하도록 설정함.');
 
     app.post(api_path, function(req, res, next) {
-        console.log('패스 [' + api_path + ']에서 JSON-RPC 호출됨.');
+        // console.log('패스 [' + api_path + ']에서 JSON-RPC 호출됨.');
 
         var options = {};
 
@@ -67,13 +67,11 @@ function initHandlers(jayson, app, api_path) {
         }
 
         // RPC 함수 호출
-        console.log('RPC 함수를 호출합니다.');
+        // console.log('RPC 함수를 호출합니다.');
         jaysonServer.call(req.body, function(error, success) {
             var response = error || success;
 
-            console.log(response);
-
-            // 결과 데이터를 JSON으로 만들어 응답
+             // 결과 데이터를 JSON으로 만들어 응답
             utils.JSON.stringify(response, options, function(err, body) {
                 if(err) return err;
 
