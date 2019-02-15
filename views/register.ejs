@@ -43,10 +43,10 @@
               <a class="nav-link" href="/">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/register">등록</a>
+              <a class="nav-link" href="/register">register</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/search">검색</a>
+              <a class="nav-link" href="/search">search</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/mypage">mypage</a>
@@ -76,7 +76,7 @@
       <div class="row">
         <div class="col-lg-8 col-md-10 mx-auto">
 
-          <div id="title">동영상 등록</div>
+          <h4><div id="title">upload video</div></h4>
 
           <div id="content">
             <p>file</p>
@@ -154,9 +154,9 @@
           <%if(signal!=null){
                   switch (signal) {
           case "upload" : %>
-            $("#title").html("등록완료");
-            $("#content").html("파일 이름 : <%= file_info.File_Name%><br> 파일 타입 : <%= file_info.File_Type%>");
-            $("#result").html("아이템 가격 : <input type='text' id='price'/> <br><br><input id='detailButton' type='button' value='detail'>")
+            $("#title").html("upload complete");
+            $("#content").html("File name : <%= file_info.File_Name%><br> File type : <%= file_info.File_Type%>");
+            $("#result").html("File price : <input type='text' id='price'/> <br><br><input id='detailButton' type='button' value='detail'>")
 
             $("#detailButton").click(function() {
                 console.log("click");
@@ -195,15 +195,15 @@
                     createTime = data.result.Create_Date;
                     hash = data.result.hash;
 
-                    $("#title").html("디테일 정보 확인");
-                    $("#content").append("<br>파일 크기 : " +size +
-                                        "<br> 재생 시간 : " + duration +
-                                        "<br> 파일 생성 일자 : " + createTime +
-                                        "<br> 파일 위치 : " + loc +
-                                        "<br> address : " + address+
-                                        "<br> price : " + itemprice+
-                                        "<br> itemHash : " + hash);
-                    $("#result").html("<input id='itemHash' type='button' value='Store in blockchain' onclick='storeBlcokchain()'>");
+                    $("#title").html("File detail information");
+                    $("#content").append("<br>File size : " +size +
+                                        "<br> File duration : " + duration +
+                                        "<br> File create time : " + createTime +
+                                        "<br> File location  : " + loc +
+                                        "<br> Publisher address : " + address+
+                                        "<br> File price : " + itemprice+
+                                        "<br> File Hash : " + hash);
+                    $("#result").html("<input id='itemHash' type='button' value='Register in BlockChain' onclick='storeBlcokchain()'>");
 
                     address = data.result.address;
                 },

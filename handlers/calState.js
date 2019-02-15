@@ -12,15 +12,10 @@ var calState = function (params, callback) {
 
     if(requestAck == params[0].responseBlk) {
         // 정상 처리되고 있을때
-        if(requestAck==0){
+        if(params[0].responseBlk==0){
             database.setProofOfEncryption(params[0].encryptionData);
-
         }else {
             database.setEncryptionData(params[0].encryptionData);
-
-            if(requestAck == blockCount-1){
-                // decreption하고 hash값 올리고 proofOfEncrytion 등록
-            }
         }
 
         // requstAck, balance, timeLate, get Balance, timeLate
@@ -30,7 +25,6 @@ var calState = function (params, callback) {
 
         var currentId = params[0].id;
         requestAck +=1;
-        balance += pricePerBlock * requestAck;
 
         console.log("reqAck   : ", requestAck);
         console.log( requestAck + " BP    : " + balance);
@@ -43,7 +37,9 @@ var calState = function (params, callback) {
         var deposit = database.getDeposit();
         var accounts = database.get_accounts();
 
-        if(balance > deposit){
+        // balance를 추가했는데 deposit을 초과하면 deposit balance 까지만 준다.
+        var temp = pricePerBlock * requestAck;
+        if(temp > deposit){
             //balanceproof 생성
             connection.createBP(accounts[1].address, deposit, function (BP) {
                 var output = {requestAck : requestAck, BP : BP, id : currentId +1};
@@ -54,7 +50,9 @@ var calState = function (params, callback) {
                 callback(null, output);
             })
         }
-        else if(balance <= deposit){
+        else if(temp <= deposit){
+            balance = pricePerBlock * requestAck;
+
             //balanceproof 생성
             connection.createBP(accounts[1].address, balance, function (BP) {
                 var output = {requestAck : requestAck, BP : BP, id : currentId +1};
@@ -74,7 +72,7 @@ var calState = function (params, callback) {
 };
 
 // 시간 지연 계산
-var count = 2;
+var count = 1;
 function calTimeLate(existingTime, previousTime, newTime) {
     var alpha = 0.2;
     var temp = newTime - previousTime;

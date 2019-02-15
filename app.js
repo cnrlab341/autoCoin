@@ -106,14 +106,14 @@ var fileStorage =  multer.diskStorage(
 
             var extention = path.extname(file.originalname);
             var basename = path.basename(file.originalname, extention);        //확장자 .jpg 만 빠진 파일명을 얻어온다
-            var fname =  "0xC1de081e01F1A341473E3F1c9Ff3962D0D6Bd9b2_" + basename + extention;
+            var fname =  basename + extention;
             callback(null, fname);
 
         }
 
     }
 );
-
+// 0x51d06583936251d91e170ec61c870657de2b3457600d5d59a3492a682d9b3c9a
 var upload = multer(
     {
         storage: fileStorage,
@@ -218,6 +218,7 @@ var currentBP;
 var finalBP;
 var password = "NFd6N3v1nbL47FK0xpZjxZ7NY4fYpNYd";
 var submitData = require('./database/temp.js');
+var keyhex = "8479768f48481eeb9c8304ce0a58481eeb9c8304ce0a5e3cb5e3cb58479768f4"; //length 32 추후에 publisher에게 등록하게끔
 
 // socket.io 서버를 시작합니다.
 var io = socketio.listen(server);
@@ -243,12 +244,13 @@ io.sockets.on('connection', function (socket) {
         // block count 블록당 가격 체크
         setting(message.deposit, function (_blockCount, _pricePerBlock, _rest) {
             console.log("setting 변수 -> blockCount : " +_blockCount + " // pricePerBlock : " + _pricePerBlock + " // rest : " + _rest);
+            console.log("URI request : " + message.setting_parameter);
 
             blockCount = _blockCount;
             pricePerBlock = _pricePerBlock;
             rest = _rest;
 
-            var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest, rest}
+            var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest : rest};
 
             io.sockets.connected[login_ids[message.from]].emit('setting', output);
             currentTime = Date.now();
@@ -256,7 +258,7 @@ io.sockets.on('connection', function (socket) {
         });
         // sendResponse(socket, "setting", '200');
 
-    })
+    });
 
     socket.on('submit', function (message) {
         // console.log("submit socket 접근");
@@ -268,11 +270,9 @@ io.sockets.on('connection', function (socket) {
             submitData.setPublisherTimeLate(timeLate);
             submitData.setPublisherPreviousTime(Number(currentTime));
 
-            console.log("Publisher " + "1번째 timelate : ", timeLate +"ms");
+            console.log("Publisher " + "0번째 timelate : ", timeLate +"ms");
 
-            encrypt(proofOfEncryption, function (result) {
-                var encryptionData = result.toString('base64');
-
+            encryptAES(proofOfEncryption, function (encryptionData) {
                 var output = {responseBlk : 0, encryptionData : encryptionData, id : message.id }
                 console.log("resBlK   : ", 0);
 
@@ -292,10 +292,10 @@ io.sockets.on('connection', function (socket) {
             calTimeLate(timeLate, previousTime, Number(currentTime));
             finalBP = message.BP;
 
-            encrypt(remainingData[message.requestAck-1], function (result) {
-                var encryptionData = result.toString('base64');
+            submitData.setBP(finalBP);
 
-                var output = {responseBlk : message.requestAck, encryptionData : encryptionData, id : message.id }
+            encryptAES(remainingData[message.requestAck-1], function (encryptionData) {
+                 var output = {responseBlk : message.requestAck, encryptionData : encryptionData, id : message.id }
                 console.log("resBlK   : ", message.requestAck);
 
                 if(login_ids[message.from]){
@@ -317,9 +317,7 @@ io.sockets.on('connection', function (socket) {
             calTimeLate(timeLate, previousTime, Number(currentTime));
 
             currentBP = message.BP;
-            encrypt(remainingData[message.requestAck-1], function (result) {
-                var encryptionData = result.toString('base64');
-
+            encryptAES(remainingData[message.requestAck-1], function (encryptionData) {
                 var output = {responseBlk : message.requestAck, encryptionData : encryptionData, id : message.id }
                 console.log("resBlK   : ", message.requestAck);
 
@@ -331,7 +329,17 @@ io.sockets.on('connection', function (socket) {
             })
 
         }
-    })
+    });
+
+    // BP가 deposit보다 작을때 (cause rest)
+    socket.on('last', function (message) {
+        // console.log("submit socket 접근");
+        // console.log(message);
+
+        if (message.requestAck == 0) {
+
+        }
+    });
 });
 
 function sendResponse(socket, command, code) {
@@ -358,21 +366,50 @@ function setting(deposit, callback) {
         console.log(remainingData.length)
 
         var blockCount = remainingData.length + 1; // blockcount
-        var pricePerBlock = deposit / (remainingData.length -1); // 몫
-        var rest = deposit - blockCount * pricePerBlock; // 나머지
+        var pricePerBlock = deposit / (blockCount-1); // 몫
+        var rest = deposit - (blockCount-1) * pricePerBlock; // 나머지
         callback(blockCount, pricePerBlock, rest);
 
     })
 }
 
-function encrypt(buffer, callback){
-    var cipher = crypto.createCipheriv(algorithm, password, 'TestingIV1234567');
-    var crypted = Buffer.concat([cipher.update(buffer),cipher.final()]);
-    callback(crypted);
+function encryptAES(input, callback) {
+    try {
+        var iv = "AAAAIGZ0eXBtcDQy";
+        // console.info('iv',iv);
+        var data = new Buffer(input).toString('binary');
+        // console.info('data',data);
+
+        key = new Buffer(keyhex, "hex");
+        //console.info(key);
+        var cipher = require('crypto').createCipheriv('aes-256-cbc', key, iv);
+        // UPDATE: crypto changed in v0.10
+
+        // https://github.com/joyent/node/wiki/Api-changes-between-v0.8-and-v0.10
+
+        var nodev = process.version.match(/^v(\d+)\.(\d+)/);
+
+        var encrypted;
+
+        if( nodev[1] === '0' && parseInt(nodev[2]) < 10) {
+            encrypted = cipher.update(data, 'binary') + cipher.final('binary');
+        } else {
+            encrypted =  cipher.update(data, 'utf8', 'binary') +  cipher.final('binary');
+        }
+
+        var encoded = new Buffer(iv, 'binary').toString('hex') + new Buffer(encrypted, 'binary').toString('hex');
+
+        callback(encoded);
+    } catch (ex) {
+        // handle error
+        // most likely, entropy sources are drained
+        console.error(ex);
+        callback('error');
+    }
 }
 
 // 시간 지연 계산
-var count =2;
+var count =1;
 function calTimeLate(existingTime, previousTime, newTime) {
     var alpha = 0.2;
     var temp = newTime - previousTime;

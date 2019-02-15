@@ -11,6 +11,7 @@ var handler_info = [
      {file:'./detail', method:'detail'}
     , {file:'./calState', method:'calState'}
     , {file:'./setInitialState', method:'setInitialState'}
+    , {file: './last', method: 'last'}
 ];
 
 

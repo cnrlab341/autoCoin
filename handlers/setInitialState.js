@@ -12,11 +12,10 @@ var previousTime;
 var setInitialState = function(params, callback){
     // console.log("JSON-RPC setInitialSate 호출");
     // console.dir("request params : " +  params); //   var message = {blockCount : result.blockCount, pricePerBlock : result.pricePerBlock, rest : result.rest, id : id}
-    console.log("Consumer " , "1번째 timelate : ", params[0].timeLate + "ms")
+    console.log("Consumer " , "0번째 timelate : ", params[0].timeLate + "ms")
 
     // setInitialState
     blockCount = params[0].blockCount;
-    encryptionData = new Array(blockCount-1);
     pricePerBlock = params[0].pricePerBlock;
     rest = params[0].rest;
     timeLate = params[0].timeLate;
@@ -27,9 +26,11 @@ var setInitialState = function(params, callback){
     balance + pricePerBlock;
 
     //_blockCount, _pricePerBlock, _rest, _timeLate, _encryptionData, _balance, _requestAck
-    submitData.setInitialdata(blockCount, pricePerBlock, rest, timeLate, encryptionData, balance, requestAck, previousTime);
+    submitData.setInitialdata(blockCount, pricePerBlock, rest, timeLate, balance, requestAck, previousTime);
 
     callback(null, output);
+    console.log("reqAck   : ", requestAck);
+    console.log( requestAck + " BP    : 0");
 };
 
 module.exports = setInitialState;

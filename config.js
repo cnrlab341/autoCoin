@@ -22,7 +22,8 @@ module.exports = {
         {file:'./test', path:'/echo', method:'echo', type:'get'},
         {file:'./test', path:'/socket', method:'socket', type:'get'},
 
-        {file:'./mypage', path:'/mypage', method:'mypage', type:'get'}
+        {file:'./mypage', path:'/mypage', method:'mypage', type:'get'},
+        {file:'./mypage', path:'/mypage/completeChannel', method:'completeChannel', type:'post'}
         //===== User =====//
         // {file:'./user', path:'/process/login', method:'login', type:'post'}					    // user.login
         // ,{file:'./user', path:'/process/adduser', method:'adduser', type:'post'}				// user.adduser

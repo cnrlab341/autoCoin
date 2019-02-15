@@ -8,7 +8,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const abi = fs.readFileSync(__dirname + '/autocoin.json');
 const bytecode = fs.readFileSync(__dirname + '/AutoCoin.txt', 'utf8').toString();
 
-var contract_address = "0x65275E7E40d123563dE2b6658c701e9Bee3BC5C2";
+var contract_address = "0xbb7e8415e2f9672149843d6e41eb3406e16e6b8d";
 // coinbase : defaultAccount : from address ( contract를 배포할 address)
 
 // autoCoin Setting
@@ -160,7 +160,10 @@ module.exports = {
         autoCoin.methods.DeliverChannel(__channelSerial).call({
             from : address
         }, function (err, result) {
-            if(err) console.log(err);
+            if(err) {
+                console.log(err);
+                callback(error)
+            }
             else {
                 console.log('APP : ', result)
                 callback(result)
@@ -175,8 +178,115 @@ module.exports = {
 
         var BP = web3.eth.accounts.sign(balanceString, "0x13ba66f8bc43c7851249e742bd92ccc495b6aa75a6636fbc6e77176a5fdd3dfe");
         callback(BP);
+    },
+
+    saveReceivedContent : function (address, proofOfEncryption, item, channelSerial, callback) {
+        console.log("web3//saveReceivedContent 접근");
+
+        autoCoin.setProvider(web3.currentProvider);
+
+        var itemHash = web3.utils.sha3(item);
+        console.log("hash : ", itemHash)
+        var transfer = autoCoin.methods.saveReceivedContent(proofOfEncryption, itemHash, channelSerial);
+        var encodedABI = transfer.encodeABI();
+
+        var tx = {
+            from: address,
+            to: contract_address,
+            gas: 6721975,
+            data: encodedABI
+        };
+
+        web3.eth.accounts.signTransaction(tx, "0xae950f323a3155496625b2936f84750513488cd85e0ecc1b887dcd2f35999e84").then(signed => {
+            var tran = web3.eth.sendSignedTransaction(signed.rawTransaction);
+
+            tran.catch(function (error) {
+                console.log(error)
+                callback(error)
+            })
+            tran.on('confirmation', (confirmationNumber, receipt) => {
+                console.log('confirmation: ' + confirmationNumber);
+            });
+
+            tran.on('transactionHash', hash => {
+                // console.log('hash');
+                console.log(hash);
+            });
+
+            tran.on('receipt', receipt => {
+                // console.log('reciept');
+                console.log(receipt);
+                callback(true);
+            });
+        });
+    },
+
+    completeChannel : function (address, channelSerial, encryptionKey, BP, v, r, s, balance, callback) {
+        console.log("comleteChannel 접근");
+        autoCoin.setProvider(web3.currentProvider);
+
+
+        var transfer = autoCoin.methods.completeChannel(channelSerial, encryptionKey, BP, v, r, s, balance);
+        var encodedABI = transfer.encodeABI();
+
+        var tx = {
+            from: address,
+            to: contract_address,
+            gas: 6721975,
+            data: encodedABI
+        };
+
+        web3.eth.accounts.signTransaction(tx, "0x13ba66f8bc43c7851249e742bd92ccc495b6aa75a6636fbc6e77176a5fdd3dfe").then(signed => {
+            var tran = web3.eth.sendSignedTransaction(signed.rawTransaction);
+
+            tran.catch(function (error) {
+                console.log(error)
+                callback(error)
+            })
+            tran.on('confirmation', (confirmationNumber, receipt) => {
+                console.log('confirmation: ' + confirmationNumber);
+            });
+
+            tran.on('transactionHash', hash => {
+                console.log('hash');
+                console.log(hash);
+            });
+
+            tran.on('receipt', receipt => {
+                console.log('reciept');
+                console.log(receipt);
+                callback(true);
+            });
+        });
     }
 }
+
+// deploy contract address
+//
+// var transfer = autoCoin.deploy({
+//     data : "0x" + bytecode,
+// });
+//
+// var encodedABI = transfer.encodeABI();
+//
+// var tx = {
+//     from: '0x22FA6ea1e3AfE958b06115291791d70f71377e64',
+//     gas: 6721975,
+//     data: encodedABI
+// };
+//
+// web3.eth.accounts.signTransaction(tx, "0xae950f323a3155496625b2936f84750513488cd85e0ecc1b887dcd2f35999e84").then(signed => {
+//     var tran = web3.eth.sendSignedTransaction(signed.rawTransaction);
+//     // console.log("tran : ", tran.)
+//     tran.catch(function (error) {
+//         console.log(error)
+//     })
+//     //
+//     tran.on('receipt', receipt => {
+//         console.log('contractAddress : ' + receipt.contractAddress);
+//     });
+// });
+
 // 실행하시오!!
 // autoCoin.deploy({
 //     data : bytecode,
@@ -204,8 +314,7 @@ module.exports = {
 //     else {
 //         console.log('APP : ', result)
 //     }
-// })
-
+// });
 
 
 function unlock_account(account, password) {

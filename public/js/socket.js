@@ -26,14 +26,14 @@ $(function () {
         endPoint : 'http://localhost:3000/api',
         namespace : ''
     });
-    connectToServer();
+    // connectToServer();
 });
 
 // 서버에 연결하는 함수 정의
 function connectToServer() {
     var options = {'forceNew' : true};
     var url = 'http://' + host + ':' + port;
-    var setting_parameter = publisher + "//" + content_name;
+    var setting_parameter = publisher + "//" + content_name + "mp4";
 
     socket = io.connect(url, options);
     socket.on('connect', function () {
@@ -72,9 +72,7 @@ function connectToServer() {
         currentTime = new Date();
         var message = {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, newTime : Number(currentTime)};
 
-
-        // 여기서 부터!!
-        calState("calState", message);
+        lastEvent("last", message);
     })
 
     socket.on('disconnect', function () {
@@ -123,6 +121,32 @@ function calState(method, message){
             socket.emit('submit', output);
 
             },
+        error: function(data) {
+            console.log('에러 응답을 받았습니다.');
+            console.dir(data);
+
+        }
+    });
+}
+
+function lastEvent(method, message){
+    $.jsonRPC.request(method, {
+        id: message.id,
+        params: [message],
+        success: function(data) {
+            console.log('정상 응답을 받았습니다.');
+            console.log(data.result);
+
+            if(data.result.BP != undefined){
+                if(socket == undefined){
+                    alert('Not connected to Publisher');
+                    return;
+                }
+                var output = {BP : data.result.BP, from : consumer};
+
+                socket.emit('last', output);
+            }
+        },
         error: function(data) {
             console.log('에러 응답을 받았습니다.');
             console.dir(data);

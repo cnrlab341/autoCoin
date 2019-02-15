@@ -21,6 +21,7 @@
     <!-- Custom styles for this template -->
     <link href="../public/css/clean-blog.min.css" rel="stylesheet">
 
+
   </head>
 
   <body>
@@ -38,10 +39,10 @@
             <a class="nav-link" href="/">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/register">등록</a>
+            <a class="nav-link" href="/register">register</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/search">검색</a>
+            <a class="nav-link" href="/search">search</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/mypage">mypage</a>
@@ -69,17 +70,27 @@
     <div class="container">
       <div class="row">
         <div id="result" class="col-lg-8 col-md-10 mx-auto">
+          <h4>Channel information</h4>
           publisher : <%= response.publisher%> <br>
           consumer : <%= response.consumer%> <br>
           deposit : <%= response.deposoit%> <br>
           duration : <%= response.duration%> day <br>
           CreateTime : <%= response.createTime%> <br>
           ItemSerial : <%= response.ItemSerial%> <br>
-          proofOfEncryption : <%= response.proofOfEncryption%> <br>
-          deliveredItemHash : <%= response.deliveredItemHash%> <br>
+          proofOfEncryption : 77f7d289257a852dec767cc681a4a3fe3fc791650f5e678b5da666b7da9892d1df1d741a7f6c53c6e41307934161273f <br>
+          deliberedItemHash : 0x51d06583936251d91e170ec61c870657de2b3457600d5d59a3492a682d9b3c9a <br>
+          <!--proofOfEncryption : <%= response.proofOfEncryption%> <br>-->
+          <!--deliveredItemHash : <%= response.deliveredItemHash%> <br>-->
           tempBalanceProof : <%= response.tempBalanceProof%> <br>
-          encryptionKey : <%= response.encryptionKey%> <br>
+          <!--encryptionKey : <%= response.encryptionKey%> <br>-->
+          encryptionKey : 8479768f48481eeb9c8304ce0a58481eeb9c8304ce0a5e3cb5e3cb58479768f4 <br>
           state : <%= response.state%> <br>
+          <br><br>
+          <button onclick="connectToServer()">request</button> <br>
+          <form action="/mypage/completeChannel" method="post">
+            <button type="submit">channel complete</button>
+          </form>
+
         </div>
       </div>
     </div>
