@@ -23,7 +23,7 @@ var timeLate; // 시간 지연
 // 문서 로딩 후 실행
 $(function () {
     $.jsonRPC.setup({
-        endPoint : 'http://192.9.45.131:3000/api',
+        endPoint : 'http://192.9.45.124:3000/api',
         namespace : ''
     });
     // connectToServer();

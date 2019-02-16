@@ -4,7 +4,7 @@ let Web3 = require('web3');
 // let Shh = require('web3-shh')
 // const shh = new Shh('http://localhost:8545');
 
-const web3 = new Web3(new Web3.providers.HttpProvider('http://192.9.45.131:8545'));
+const web3 = new Web3(new Web3.providers.HttpProvider('http://192.9.45.124:8545'));
 const abi = fs.readFileSync(__dirname + '/autocoin.json');
 const bytecode = fs.readFileSync(__dirname + '/AutoCoin.txt', 'utf8').toString();
 
