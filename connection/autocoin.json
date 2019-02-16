@@ -1,5 +1,19 @@
 [
   {
+    "constant": true,
+    "inputs": [],
+    "name": "name",
+    "outputs": [
+      {
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -28,44 +42,6 @@
       {
         "name": "__channelSerial",
         "type": "uint256"
-      },
-      {
-        "name": "__encryptionKey",
-        "type": "string"
-      },
-      {
-        "name": "__balanceProof",
-        "type": "bytes32"
-      },
-      {
-        "name": "v",
-        "type": "uint8"
-      },
-      {
-        "name": "r",
-        "type": "bytes32"
-      },
-      {
-        "name": "s",
-        "type": "bytes32"
-      },
-      {
-        "name": "__balance",
-        "type": "uint256"
-      }
-    ],
-    "name": "completeChannel",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "__channelSerial",
-        "type": "uint256"
       }
     ],
     "name": "consumerCancelChannel",
@@ -75,148 +51,58 @@
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "__deposit",
-        "type": "uint256"
-      },
-      {
-        "name": "__itemSerial",
-        "type": "uint256"
-      }
-    ],
-    "name": "createChannel",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "spender",
-        "type": "address"
-      },
-      {
-        "name": "subtractedValue",
-        "type": "uint256"
-      }
-    ],
-    "name": "decreaseAllowance",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "spender",
-        "type": "address"
-      },
-      {
-        "name": "addedValue",
-        "type": "uint256"
-      }
-    ],
-    "name": "increaseAllowance",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "__channelSerial",
-        "type": "uint256"
-      },
-      {
-        "name": "__balanceProof",
-        "type": "bytes32"
-      },
-      {
-        "name": "v",
-        "type": "uint8"
-      },
-      {
-        "name": "r",
-        "type": "bytes32"
-      },
-      {
-        "name": "s",
-        "type": "bytes32"
-      },
-      {
-        "name": "__balance",
-        "type": "uint256"
-      }
-    ],
-    "name": "publisherSideCancelChannel",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "__itemPrice",
-        "type": "uint256"
-      },
-      {
-        "name": "__itemLocation",
-        "type": "string"
-      },
-      {
-        "name": "__itemSize",
-        "type": "string"
-      },
-      {
-        "name": "__itemType",
-        "type": "string"
-      },
-      {
-        "name": "__itemDuration",
-        "type": "uint256"
-      },
-      {
-        "name": "__itemCreateTime",
-        "type": "uint256"
-      },
-      {
-        "name": "__itemHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "registerItem",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
+    "constant": true,
     "inputs": [],
-    "name": "renounceOwnership",
-    "outputs": [],
+    "name": "totalSupply",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -262,6 +148,241 @@
     "constant": false,
     "inputs": [
       {
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "name": "addedValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "increaseAllowance",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "__itemPrice",
+        "type": "uint256"
+      },
+      {
+        "name": "__itemLocation",
+        "type": "string"
+      },
+      {
+        "name": "__itemSize",
+        "type": "string"
+      },
+      {
+        "name": "__itemType",
+        "type": "string"
+      },
+      {
+        "name": "__itemDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "__itemCreateTime",
+        "type": "uint256"
+      },
+      {
+        "name": "__itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "registerItem",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "__deposit",
+        "type": "uint256"
+      },
+      {
+        "name": "__itemSerial",
+        "type": "uint256"
+      }
+    ],
+    "name": "createChannel",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "deliverOwnItem",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "__channelSerial",
+        "type": "uint256"
+      },
+      {
+        "name": "__balanceProof",
+        "type": "bytes32"
+      },
+      {
+        "name": "v",
+        "type": "uint8"
+      },
+      {
+        "name": "r",
+        "type": "bytes32"
+      },
+      {
+        "name": "s",
+        "type": "bytes32"
+      },
+      {
+        "name": "__balance",
+        "type": "uint256"
+      }
+    ],
+    "name": "publisherSideCancelChannel",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "isOwner",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "__channelSerial",
+        "type": "uint256"
+      },
+      {
+        "name": "__encryptionKey",
+        "type": "string"
+      },
+      {
+        "name": "__balanceProof",
+        "type": "bytes32"
+      },
+      {
+        "name": "v",
+        "type": "uint8"
+      },
+      {
+        "name": "r",
+        "type": "bytes32"
+      },
+      {
+        "name": "s",
+        "type": "bytes32"
+      },
+      {
+        "name": "__balance",
+        "type": "uint256"
+      }
+    ],
+    "name": "completeChannel",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "name": "__proofOfEncryption",
         "type": "string"
       },
@@ -276,6 +397,80 @@
     ],
     "name": "saveReceivedContent",
     "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "__itemSerial",
+        "type": "uint256"
+      }
+    ],
+    "name": "deliverItem",
+    "outputs": [
+      {
+        "name": "_publisher",
+        "type": "address"
+      },
+      {
+        "name": "_itemPrice",
+        "type": "uint256"
+      },
+      {
+        "name": "_itemLocation",
+        "type": "string"
+      },
+      {
+        "name": "_itemSize",
+        "type": "string"
+      },
+      {
+        "name": "_itemType",
+        "type": "string"
+      },
+      {
+        "name": "_itemDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "_itemCreateTime",
+        "type": "uint256"
+      },
+      {
+        "name": "__itemHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "_isRegistered",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "name": "subtractedValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "decreaseAllowance",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -304,30 +499,103 @@
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "name": "value",
-        "type": "uint256"
-      }
-    ],
-    "name": "transferFrom",
+    "constant": true,
+    "inputs": [],
+    "name": "deliverOwnChannel",
     "outputs": [
       {
         "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "__channelSerial",
+        "type": "uint256"
+      }
+    ],
+    "name": "DeliverChannel",
+    "outputs": [
+      {
+        "name": "_publisher",
+        "type": "address"
+      },
+      {
+        "name": "_consumer",
+        "type": "address"
+      },
+      {
+        "name": "_deposit",
+        "type": "uint256"
+      },
+      {
+        "name": "_duration",
+        "type": "uint256"
+      },
+      {
+        "name": "_CreateTime",
+        "type": "uint256"
+      },
+      {
+        "name": "_ItemSerial",
+        "type": "uint256"
+      },
+      {
+        "name": "_proofOfEncryption",
+        "type": "string"
+      },
+      {
+        "name": "_deliveredItemHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "_tempBalanceProof",
+        "type": "uint256"
+      },
+      {
+        "name": "_encryptionKey",
+        "type": "string"
+      },
+      {
+        "name": "_state",
+        "type": "uint256"
+      },
+      {
+        "name": "_isRegistered",
         "type": "bool"
       }
     ],
     "payable": false,
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "allowance",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -410,273 +678,5 @@
     ],
     "name": "Approval",
     "type": "event"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "name": "spender",
-        "type": "address"
-      }
-    ],
-    "name": "allowance",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "owner",
-        "type": "address"
-      }
-    ],
-    "name": "balanceOf",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "decimals",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "__channelSerial",
-        "type": "uint256"
-      }
-    ],
-    "name": "DeliverChannel",
-    "outputs": [
-      {
-        "name": "_publisher",
-        "type": "address"
-      },
-      {
-        "name": "_consumer",
-        "type": "address"
-      },
-      {
-        "name": "_deposit",
-        "type": "uint256"
-      },
-      {
-        "name": "_duration",
-        "type": "uint256"
-      },
-      {
-        "name": "_CreateTime",
-        "type": "uint256"
-      },
-      {
-        "name": "_ItemSerial",
-        "type": "uint256"
-      },
-      {
-        "name": "_proofOfEncryption",
-        "type": "string"
-      },
-      {
-        "name": "_deliveredItemHash",
-        "type": "bytes32"
-      },
-      {
-        "name": "_tempBalanceProof",
-        "type": "uint256"
-      },
-      {
-        "name": "_encryptionKey",
-        "type": "string"
-      },
-      {
-        "name": "_state",
-        "type": "uint256"
-      },
-      {
-        "name": "_isRegistered",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "__itemSerial",
-        "type": "uint256"
-      }
-    ],
-    "name": "deliverItem",
-    "outputs": [
-      {
-        "name": "_publisher",
-        "type": "address"
-      },
-      {
-        "name": "_itemPrice",
-        "type": "uint256"
-      },
-      {
-        "name": "_itemLocation",
-        "type": "string"
-      },
-      {
-        "name": "_itemSize",
-        "type": "string"
-      },
-      {
-        "name": "_itemType",
-        "type": "string"
-      },
-      {
-        "name": "_itemDuration",
-        "type": "uint256"
-      },
-      {
-        "name": "_itemCreateTime",
-        "type": "uint256"
-      },
-      {
-        "name": "__itemHash",
-        "type": "bytes32"
-      },
-      {
-        "name": "_isRegistered",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "deliverOwnChannel",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "deliverOwnItem",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "isOwner",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "name",
-    "outputs": [
-      {
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "owner",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "symbol",
-    "outputs": [
-      {
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "totalSupply",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
   }
 ]

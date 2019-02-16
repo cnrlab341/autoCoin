@@ -4,11 +4,11 @@ let Web3 = require('web3');
 // let Shh = require('web3-shh')
 // const shh = new Shh('http://localhost:8545');
 
-const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+const web3 = new Web3(new Web3.providers.HttpProvider('http://192.9.45.131:8545'));
 const abi = fs.readFileSync(__dirname + '/autocoin.json');
 const bytecode = fs.readFileSync(__dirname + '/AutoCoin.txt', 'utf8').toString();
 
-var contract_address = "0xbb7e8415e2f9672149843d6e41eb3406e16e6b8d";
+var contract_address = "0x65275e7e40d123563de2b6658c701e9bee3bc5c2";
 // coinbase : defaultAccount : from address ( contract를 배포할 address)
 
 // autoCoin Setting
@@ -176,7 +176,7 @@ module.exports = {
         // console.log(address, balance)
         var balanceString = balance.toString();
 
-        var BP = web3.eth.accounts.sign(balanceString, "0x13ba66f8bc43c7851249e742bd92ccc495b6aa75a6636fbc6e77176a5fdd3dfe");
+        var BP = web3.eth.accounts.sign(balanceString, "0xae950f323a3155496625b2936f84750513488cd85e0ecc1b887dcd2f35999e84");
         callback(BP);
     },
 

@@ -210,12 +210,6 @@ var modulesTimeLate = require('./modules/calculateTimeLate');
 var moduleAES = require('./modules/AES-256-cbc');
 
 var login_ids = {};
-var proofOfEncryption;
-var remainingData;
-var currentBP;
-var finalBP;
-var password = "NFd6N3v1nbL47FK0xpZjxZ7NY4fYpNYd";
-var keyhex = "8479768f48481eeb9c8304ce0a58481eeb9c8304ce0a5e3cb5e3cb58479768f4"; //length 32 추후에 publisher에게 등록하게끔
 
 // socket.io 서버를 시작합니다.
 var io = socketio.listen(server);
@@ -256,19 +250,20 @@ io.sockets.on('connection', function (socket) {
         // console.log("submit socket 접근");
         // console.log(message);
 
+        var blockCount = publisherDB.getBlockCount();
+
         if(message.requestAck==0){
             submitConsumer(message.from, message.requestAck, message.id, 'submit');
         }
 
         else if(message.requestAck==blockCount-1){
             console.log("======== last BlK ========");
-            submitConsumer(message.from, message.requestAck, message.id, 'last');
             publisherDB.setBP(message.BP);
-
+            submitConsumer(message.from, message.requestAck, message.id, 'last');
         }
         else {
-            submitConsumer(message.from, message.requestAck, message.id, 'submit');
             publisherDB.setBP(message.BP);
+            submitConsumer(message.from, message.requestAck, message.id, 'submit');
         }
 
     });
@@ -291,7 +286,7 @@ function submitConsumer(messageFrom, requestAck, id, eventType) {
         encryptionData = publisherDB.getProofOfEncryption();
     }
     else {
-        encryptionData = publisherDB.getEncryptionData()[requestAck];
+        encryptionData = publisherDB.getEncryptionData()[requestAck-1];
     }
 
     var output = {responseBlk: requestAck, encryptionData: encryptionData, id: id}

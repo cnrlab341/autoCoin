@@ -1,5 +1,6 @@
 var connection = require('../connection/connect');
 var consumerDB = require('../database/consumer')
+var modulesTimeLate = require('../modules/calculateTimeLate');
 
 var last = function (params, callback) {
     var consumerAccount = consumerDB.getAccounts();
@@ -43,7 +44,7 @@ var last = function (params, callback) {
                         })
                     }
 
-                    var output = {BP : ""};
+                    var output = {BP : undefined};
 
                     callback(null, output);
                 })

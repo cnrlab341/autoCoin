@@ -35,6 +35,7 @@ var calState = function (params, callback) {
 
             //balanceproof 생성
             connection.createBP(consumerAccount[0].address, deposit, function (BP) {
+
                 var output = {requestAck : requestAck, BP : BP, id : currentId +1};
 
                 consumerDB.setRequestAck(requestAck);
@@ -47,7 +48,6 @@ var calState = function (params, callback) {
         }
         else if(temp <= deposit){
             balance = pricePerBlock * requestAck;
-
             //balanceproof 생성
             connection.createBP(consumerAccount[0].address, balance, function (BP) {
                 var output = {requestAck : requestAck, BP : BP, id : currentId +1};

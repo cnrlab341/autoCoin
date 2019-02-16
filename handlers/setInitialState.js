@@ -8,6 +8,10 @@ var setInitialState = function(params, callback){
     // {blockCount, pricePerBlock, rest, id, previousTime, newTime}
 
     // setInitialState
+    console.log("blockCount : ", params[0].blockCount);
+    console.log("pricePerBlock: ", params[0].pricePerBlock);
+    console.log("rest : ", params[0].rest);
+
     consumerDB.setInitialdata(params[0].blockCount, params[0].pricePerBlock, params[0].rest);
     var currentId = params[0].id; // id 값을 추가하여 json rpc 통신의 혼선을 없앤다.
 
