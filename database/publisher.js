@@ -3,12 +3,12 @@ var publisherAccounts = new Array();
 var blockCount;
 var pricePerBlock;
 var rest;
-var proofOfEncryption;
-var encryptionData = new Array();
+var proofOfEncryption;              // modules/AES-256-cbc 설정
+var encryptionData = new Array();   // modules/AES-256-cbc 설정
+var deposit;                        // modules/detail 설정
 var BP;
 var publisherPreviousTime;
 var publisherTimeLate;
-var deposit;
 
 publisherAccounts.push({privateKey : "0x13ba66f8bc43c7851249e742bd92ccc495b6aa75a6636fbc6e77176a5fdd3dfe", address : "0xec58179D7BD7CBEd4D1a76376A1c961C61548071", password : "1234"});
 
@@ -17,86 +17,86 @@ module.exports = {
 
     //setter
 
-    setAccounts : function (name, address, password) {
-        publisherAccounts.push({name : name, address : address, password : password});
+    setAccounts: function (name, address, password) {
+        publisherAccounts.push({name: name, address: address, password: password});
     },
 
-    setBlockCount : function(newBlockCount){
+    setBlockCount: function (newBlockCount) {
         blockCount = newBlockCount;
     },
 
-    setPricePerBlock : function(newPricePerBlock){
+    setPricePerBlock: function (newPricePerBlock) {
         pricePerBlock = newPricePerBlock;
     },
 
-    setRest : function(newRest){
+    setRest: function (newRest) {
         rest = newRest;
     },
 
-    setProofOfEncryption : function(newProofOfEncryption){
+    setProofOfEncryption: function (newProofOfEncryption) {
         proofOfEncryption = newProofOfEncryption;
     },
 
-    setEncryptionData : function(newEncryptionData){
+    setEncryptionData: function (newEncryptionData) {
         encryptionData.push(newEncryptionData);
     },
 
-    setBP : function(newBP){
+    setBP: function (newBP) {
         BP = newBP;
     },
 
-    setPublisherPreviousTime : function(newPublisherPreviousTime){
+    setPublisherPreviousTime: function (newPublisherPreviousTime) {
         publisherPreviousTime = newPublisherPreviousTime;
     },
 
-    setPublisherTimeLate : function(newPublisherTimeLate){
+    setPublisherTimeLate: function (newPublisherTimeLate) {
         publisherTimeLate = newPublisherTimeLate;
     },
 
-    setDeposit : function(newDepsit){
+    setDeposit: function (newDepsit) {
         deposit = newDepsit;
     },
 
 
     //getter
 
-    getAccounts : function () {
+    getAccounts: function () {
         return publisherAccounts;
     },
 
-    getBlockCount : function(){
+    getBlockCount: function () {
         return blockCount;
     },
 
-    getPricePerBlock : function(){
+    getPricePerBlock: function () {
         return pricePerBlock;
     },
 
-    getRest : function(){
+    getRest: function () {
         return rest;
     },
 
-    getProofOfEncryption : function(){
+    getProofOfEncryption: function () {
         return proofOfEncryption;
     },
 
-    getEncryptionData : function(){
+    getEncryptionData: function () {
         return encryptionData;
     },
 
-    getBP : function(){
+    getBP: function () {
         return BP;
     },
 
-    getPublisherPreviousTime : function(){
+    getPublisherPreviousTime: function () {
         return publisherPreviousTime;
     },
 
-    getPublisherTimeLate : function(){
+    getPublisherTimeLate: function () {
         return publisherTimeLate;
     },
 
-    getDeposit : function(){
+    getDeposit: function () {
         return deposit;
-    },
-}
+    }
+};

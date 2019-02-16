@@ -1,5 +1,5 @@
 var web3_connection = require('../connection/connect.js');
-var accounts = require('../database/temp.js');
+var accounts = require('../database/consumer.js');
 var join = function (req, res) {
     console.log("join 접근");
     res.render('join.ejs', {signal :""});

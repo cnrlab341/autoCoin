@@ -1,40 +1,33 @@
 var connection = require('../connection/connect');
-var database = require('../database/temp')
+var consumerDB = require('../database/consumer')
 
 var last = function (params, callback) {
-    var requestAck = database.getRequestAck();
-    var blockCount = database.getBlockCount();
-    var pricePerBlock = database.getPricePerBlock();
-    var deposit = database.getDeposit();
+    var consumerAccount = consumerDB.getAccounts();
+    var requestAck = consumerDB.getRequestAck();
+    var blockCount = consumerDB.getBlockCount();
+    var pricePerBlock = consumerDB.getPricePerBlock();
+    var deposit = consumerDB.getDeposit();
+    var balance = consumerDB.getBalance();
 
     if (params[0].responseBlk == requestAck && params[0].responseBlk == blockCount-1){
         console.log("last 조건 만족");
 
-        database.setEncryptionData(params[0].encryptionData);
-        console.log("EncrytionData result length : " + database.getEncryptionData().length);
-
-        var timeLate = database.getClientTimeLate();
-        var previousTime = database.getClientPreviousTime();
-        var balance = database.getBalance();
-        var deposit = database.getDeposit();
+        consumerDB.setEncryptionData(params[0].encryptionData);
 
         // 시간 지연 계산
-        calTimeLate(timeLate, previousTime, params[0].newTime);
-
-        var accounts = database.get_accounts();
+        modulesTimeLate.setConsumerTimeLate(requestAck, consumerDB.getClientTimeLate(), consumerDB.getClientPreviousTime(), params[0].newTime);
 
         // block chain function exe
-        console.log("proofOfEncrytion : " + database.getProofOfEncryption());
-        console.log("encryptionData Length : ", database.getEncryptionData().length);
+        var remainingData = consumerDB.getEncryptionData();
+        var proofOfEncryption = consumerDB.getProofOfEncryption();
+        console.log("proofOfEncrytion : " + proofOfEncryption);
+        console.log("encryptionData Length : ", remainingData.length);
 
-        var remainingData = database.getEncryptionData();
-        var encryptionData = database.getProofOfEncryption();
+        var encryptionData = proofOfEncryption;
         for(var i=0;i<remainingData.length;i++){
             encryptionData += remainingData[i];
             if(i == remainingData.length-1){
-                // console.log("encryption Data : ", encryptionData);
-                // address, proofOfEncryption, item, channelSerial, callback
-                connection.saveReceivedContent(accounts[1].address, database.getProofOfEncryption(), encryptionData, 0, function (result) {
+                 connection.saveReceivedContent(consumerAccount[0].address, proofOfEncryption, encryptionData, 0, function (result) {
                     if(result ==true){
                         console.log("saveReceivedContent 완료");
                     }else{
@@ -42,9 +35,9 @@ var last = function (params, callback) {
                     }
                     // BP가 deposit보다 작을때 (cause rest)
                     if(deposit>balance){
-                        connection.createBP(accounts[1].address, deposit, function (BP) {
+                        connection.createBP(consumerAccount[0].address, deposit, function (BP) {
                             var output = {BP : BP};
-                            database.setBalance(deposit);
+                            consumerDB.setBalance(deposit);
 
                             callback(null, output);
                         })
@@ -62,23 +55,5 @@ var last = function (params, callback) {
         callback(error);
     }
 };
-
-// 시간 지연 계산
-function calTimeLate(existingTime, previousTime, newTime) {
-    var alpha = 0.2;
-    var temp = newTime - previousTime;
-
-    var newTimeLate = alpha * temp + (1-alpha) * existingTime;
-    database.setClientTimeLate(newTimeLate);
-    database.setClientPreviousTime(newTime);
-
-    console.log("Consumer  " + "최종 timeLate : " + newTimeLate + "ms");
-}
-
-// 시간 지연 체크
-function checkTimeLate(){
-
-}
-
 
 module.exports = last;

@@ -1,4 +1,4 @@
-var accounts = require('../database/temp.js');
+var publisherDB = require('../database/publisher.js');
 var connect = require('../connection/connect');
 var moduleDetail = require('../modules/detail');
 var moduleAES = require('../modules/AES-256-cbc');
@@ -9,16 +9,19 @@ var detail = function (params, callaback) {
 
     console.log(params[0].file_path)
     console.log(params[0].price)
+    publisherDB.setDeposit(params[0].price);
 
-    // 추후 DB처리
-    var address = accounts.get_accounts();
+    var publisherAddress = publisherDB.getAccounts();
 
     moduleDetail.exeiftoolAPI(params[0].file_path, function (result) { //{File_Size : File_Size, Create_Date : Create_Date, Duration : Duration, Price: params[0].price, Loc : loc}
-        result.address = address[0].address;
-        callaback(null, result);
+        result.address = publisherAddress[0].address;
+        result.Price = params[0].price;
+
+        moduleAES.dataEncryption(params[0].file_path, function (Hash) {
+            result.hash = Hash;
+            callaback(null, result);
+
+        })
     })
-        encryptAndHash(params[0].file_path, function (result) {
-            params = {File_Size : File_Size, Create_Date : Create_Date, Duration : Duration, Price: params[0].price, Loc : loc, address : address[0].address, hash : result};
-        });
 };
 module.exports = detail;

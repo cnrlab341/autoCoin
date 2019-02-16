@@ -1,66 +1,63 @@
-var state = 0; // 현재까지 진행한 거래 상태 저장
 var connection = require('../connection/connect');
-var database = require('../database/temp')
+var consumerDB = require('../database/consumer')
+var modulesTimeLate = require('../modules/calculateTimeLate');
 
 var calState = function (params, callback) {
     // console.log("JSON-RPC calState 호출");
-    // console.dir("request params : " +  params[0]); //    {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, newTime : Number(currentTime)}
+    // console.dir("request params : " +  params[0]);
+    // {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, newTime : Number(currentTime)}
 
-     var requestAck = database.getRequestAck();
-     var blockCount = database.getBlockCount();
-     var pricePerBlock = database.getPricePerBlock();
+    var consumerAccount = consumerDB.getAccounts();
+    var requestAck = consumerDB.getRequestAck();
+    var blockCount = consumerDB.getBlockCount();
+    var pricePerBlock = consumerDB.getPricePerBlock();
+    var deposit = consumerDB.getDeposit();
 
+    // 정상 처리되고 있을때
     if(requestAck == params[0].responseBlk) {
-        // 정상 처리되고 있을때
+
         if(params[0].responseBlk==0){
-            database.setProofOfEncryption(params[0].encryptionData);
+            consumerDB.setProofOfEncryption(params[0].encryptionData);
         }else {
-            database.setEncryptionData(params[0].encryptionData);
+            consumerDB.setEncryptionData(params[0].encryptionData);
         }
-
-        // requstAck, balance, timeLate, get Balance, timeLate
-        var balance = database.getBalance();
-        var timeLate = database.getClientTimeLate();
-        var previousTime = database.getClientPreviousTime();
-
-        var currentId = params[0].id;
         requestAck +=1;
-
-        console.log("reqAck   : ", requestAck);
-        console.log( requestAck + " BP    : " + balance);
+        var currentId = params[0].id;
 
         // 시간 지연 계산
-        calTimeLate(timeLate, previousTime, params[0].newTime);
+        modulesTimeLate.setConsumerTimeLate(requestAck, consumerDB.getClientTimeLate(), consumerDB.getClientPreviousTime(), params[0].newTime);
 
-
-        // rest 처리
-        var deposit = database.getDeposit();
-        var accounts = database.get_accounts();
-
-        // balance를 추가했는데 deposit을 초과하면 deposit balance 까지만 준다.
+        // balance를 추가했는데 deposit을 초과하면 deposit balance 까지만 준다
+        var balance;
         var temp = pricePerBlock * requestAck;
         if(temp > deposit){
+            balance = deposit;
+
             //balanceproof 생성
-            connection.createBP(accounts[1].address, deposit, function (BP) {
+            connection.createBP(consumerAccount[0].address, deposit, function (BP) {
                 var output = {requestAck : requestAck, BP : BP, id : currentId +1};
 
-                // set requestAck, balance, timeLate
-                database.setCalState(requestAck, balance, timeLate);
-                // console.log("output : ", output)
+                consumerDB.setRequestAck(requestAck);
+                consumerDB.setBalance(balance);
                 callback(null, output);
+
+                console.log("reqAck   : ", requestAck);
+                console.log( requestAck + " BP    : " + deposit);
             })
         }
         else if(temp <= deposit){
             balance = pricePerBlock * requestAck;
 
             //balanceproof 생성
-            connection.createBP(accounts[1].address, balance, function (BP) {
+            connection.createBP(consumerAccount[0].address, balance, function (BP) {
                 var output = {requestAck : requestAck, BP : BP, id : currentId +1};
 
-                // set requestAck, balance, timeLate
-                database.setCalState(requestAck, balance, timeLate);
-                // console.log("output : ", output)
+                consumerDB.setRequestAck(requestAck);
+                consumerDB.setBalance(balance);
                 callback(null, output);
+
+                console.log("reqAck   : ", requestAck);
+                console.log( requestAck + " BP    : " + balance);
             })
         }
     }
@@ -71,23 +68,5 @@ var calState = function (params, callback) {
     }
 };
 
-// 시간 지연 계산
-var count = 1;
-function calTimeLate(existingTime, previousTime, newTime) {
-    var alpha = 0.2;
-    var temp = newTime - previousTime;
-
-    var newTimeLate = alpha * temp + (1-alpha) * existingTime;
-    database.setClientTimeLate(newTimeLate);
-    database.setClientPreviousTime(newTime);
-
-    console.log("Consumer  " + count + "번째 timeLate : " + newTimeLate + "ms");
-    count ++;
-}
-
-// 시간 지연 체크
-function checkTimeLate(){
-
-}
 
 module.exports = calState;

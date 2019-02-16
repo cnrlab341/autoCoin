@@ -1,4 +1,4 @@
-var database = require('../database/temp');
+var publisherDB = require('../database/publisher');
 var exec = require('child_process').exec;
 
 module.exports = {
@@ -26,10 +26,10 @@ module.exports = {
             // 추후에 location 정보 수정
             var loc = "37.44976, 127.129637 ";
 
-            var result = {File_Size : File_Size, Create_Date : Create_Date, Duration : Duration, Price: params[0].price, Loc : loc};
+            var result = {File_Size : File_Size, Create_Date : Create_Date, Duration : Duration, Loc : loc};
 
             callback(result);
         })
-    }
+}
 
 }

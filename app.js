@@ -204,20 +204,17 @@ var server = http.createServer(app).listen(app.get('port'), function(){
     console.log("Express Listening at http://localhost:" + port);
 
 });
-var currentTime;
-var previousTime;
-var timeLate; // 시간 지연
+var publisherDB = require('./database/publisher');
+var consumerDB = require('./database/consumer.js');
+var modulesTimeLate = require('./modules/calculateTimeLate');
+var moduleAES = require('./modules/AES-256-cbc');
 
 var login_ids = {};
 var proofOfEncryption;
 var remainingData;
-var blockCount;
-var pricePerBlock;
-var rest;
 var currentBP;
 var finalBP;
 var password = "NFd6N3v1nbL47FK0xpZjxZ7NY4fYpNYd";
-var submitData = require('./database/temp.js');
 var keyhex = "8479768f48481eeb9c8304ce0a58481eeb9c8304ce0a5e3cb5e3cb58479768f4"; //length 32 추후에 publisher에게 등록하게끔
 
 // socket.io 서버를 시작합니다.
@@ -242,187 +239,68 @@ io.sockets.on('connection', function (socket) {
         console.log("접속한 클라이언트 ID 개수 : %d", Object.keys(login_ids).length);
 
         // block count 블록당 가격 체크
-        setting(message.deposit, function (_blockCount, _pricePerBlock, _rest) {
-            console.log("setting 변수 -> blockCount : " +_blockCount + " // pricePerBlock : " + _pricePerBlock + " // rest : " + _rest);
-            console.log("URI request : " + message.setting_parameter);
+        var blockCount =  publisherDB.getBlockCount();
+        var pricePerBlock = publisherDB.getPricePerBlock();
+        var rest = publisherDB.getRest();
 
-            blockCount = _blockCount;
-            pricePerBlock = _pricePerBlock;
-            rest = _rest;
+        var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest : rest};
 
-            var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest : rest};
+        io.sockets.connected[login_ids[message.from]].emit('setting', output);
 
-            io.sockets.connected[login_ids[message.from]].emit('setting', output);
-            currentTime = Date.now();
-            previousTime = Number(currentTime);
-        });
-        // sendResponse(socket, "setting", '200');
-
+        // 시간체크
+        publisherDB.setPublisherPreviousTime(Number(Date.now()));
     });
+
 
     socket.on('submit', function (message) {
         // console.log("submit socket 접근");
         // console.log(message);
 
         if(message.requestAck==0){
-            currentTime = Date.now();
-            timeLate = Number(currentTime) - previousTime;
-            submitData.setPublisherTimeLate(timeLate);
-            submitData.setPublisherPreviousTime(Number(currentTime));
+            submitConsumer(message.from, message.requestAck, message.id, 'submit');
+        }
 
-            console.log("Publisher " + "0번째 timelate : ", timeLate +"ms");
-
-            encryptAES(proofOfEncryption, function (encryptionData) {
-                var output = {responseBlk : 0, encryptionData : encryptionData, id : message.id }
-                console.log("resBlK   : ", 0);
-
-                if(login_ids[message.from]){
-                    io.sockets.connected[login_ids[message.from]].emit('submit', output);
-                }else{
-                    console.log("상대방을 찾을 수 없습니다.");
-                }
-            })
-        }else if(message.requestAck==blockCount-1){
+        else if(message.requestAck==blockCount-1){
             console.log("======== last BlK ========");
-
-            //timeLate 체크
-            currentTime = Date.now();
-            previousTime = submitData.getPublisherPreviousTime();
-            timeLate = submitData.getPublisherTimeLate();
-            calTimeLate(timeLate, previousTime, Number(currentTime));
-            finalBP = message.BP;
-
-            submitData.setBP(finalBP);
-
-            encryptAES(remainingData[message.requestAck-1], function (encryptionData) {
-                 var output = {responseBlk : message.requestAck, encryptionData : encryptionData, id : message.id }
-                console.log("resBlK   : ", message.requestAck);
-
-                if(login_ids[message.from]){
-                    io.sockets.connected[login_ids[message.from]].emit('last', output);
-                }else{
-                    console.log("상대방을 찾을 수 없습니다.");
-                }
-            })
-
-            // smartcontract BP 등록하고 channel complete -< 버튼으로 만들자,, 왜냐면 consumer가 등록해줘야 가능하기 때문
-
-        }else{
-            //{requestAck: data.result.requestAck, BP : data.result.BP, id : data.result.id, from : consumer}
-
-            //timeLate 체크
-            currentTime = Date.now();
-            previousTime = submitData.getPublisherPreviousTime();
-            timeLate = submitData.getPublisherTimeLate();
-            calTimeLate(timeLate, previousTime, Number(currentTime));
-
-            currentBP = message.BP;
-            encryptAES(remainingData[message.requestAck-1], function (encryptionData) {
-                var output = {responseBlk : message.requestAck, encryptionData : encryptionData, id : message.id }
-                console.log("resBlK   : ", message.requestAck);
-
-                if(login_ids[message.from]){
-                    io.sockets.connected[login_ids[message.from]].emit('submit', output);
-                }else{
-                    console.log("상대방을 찾을 수 없습니다.");
-                }
-            })
+            submitConsumer(message.from, message.requestAck, message.id, 'last');
+            publisherDB.setBP(message.BP);
 
         }
+        else {
+            submitConsumer(message.from, message.requestAck, message.id, 'submit');
+            publisherDB.setBP(message.BP);
+        }
+
     });
 
     // BP가 deposit보다 작을때 (cause rest)
     socket.on('last', function (message) {
-        // console.log("submit socket 접근");
-        // console.log(message);
-
-        if (message.requestAck == 0) {
-
-        }
+        // var output = {BP : data.result.BP, from : consumer};
+        publisherDB.setBP(message.BP);
     });
 });
 
-function sendResponse(socket, command, code) {
-    var obj = {command : command, code : code};
-    socket.emit('setting', obj);
-}
+function submitConsumer(messageFrom, requestAck, id, eventType) {
+    var currentTime = Date.now();
+    var previousTime = publisherDB.getPublisherPreviousTime();
+    var timeLate = publisherDB.getPublisherTimeLate();
+    modulesTimeLate.setPublisherTimeLate(requestAck, timeLate, previousTime, Number(currentTime));
 
-function setting(deposit, callback) {
-   var path = 'uploads/0xC1de081e01F1A341473E3F1c9Ff3962D0D6Bd9b2_test.mp4';
-    fs.readFile(path, function (err, data) {
-        input = new Buffer(data);
-        // console.log(typeof (input))
-
-        submitData.setDeposit(deposit);
-
-        proofOfEncryption = input.toString('base64', 0, 12);
-        console.log(proofOfEncryption) // 16, AAAAIGZ0eXBtcDQy
-
-        var temp = input.toString('base64', 12, input.length);
-        // console.log(remainingData)
-
-        // // 데이터 원하는 byte크기로 자르기
-        remainingData = temp.match(new RegExp('.{1,' + 10000+ '}', 'g'));
-        console.log(remainingData.length)
-
-        var blockCount = remainingData.length + 1; // blockcount
-        var pricePerBlock = deposit / (blockCount-1); // 몫
-        var rest = deposit - (blockCount-1) * pricePerBlock; // 나머지
-        callback(blockCount, pricePerBlock, rest);
-
-    })
-}
-
-function encryptAES(input, callback) {
-    try {
-        var iv = "AAAAIGZ0eXBtcDQy";
-        // console.info('iv',iv);
-        var data = new Buffer(input).toString('binary');
-        // console.info('data',data);
-
-        key = new Buffer(keyhex, "hex");
-        //console.info(key);
-        var cipher = require('crypto').createCipheriv('aes-256-cbc', key, iv);
-        // UPDATE: crypto changed in v0.10
-
-        // https://github.com/joyent/node/wiki/Api-changes-between-v0.8-and-v0.10
-
-        var nodev = process.version.match(/^v(\d+)\.(\d+)/);
-
-        var encrypted;
-
-        if( nodev[1] === '0' && parseInt(nodev[2]) < 10) {
-            encrypted = cipher.update(data, 'binary') + cipher.final('binary');
-        } else {
-            encrypted =  cipher.update(data, 'utf8', 'binary') +  cipher.final('binary');
-        }
-
-        var encoded = new Buffer(iv, 'binary').toString('hex') + new Buffer(encrypted, 'binary').toString('hex');
-
-        callback(encoded);
-    } catch (ex) {
-        // handle error
-        // most likely, entropy sources are drained
-        console.error(ex);
-        callback('error');
+    var encryptionData;
+    if (requestAck == 0) {
+        encryptionData = publisherDB.getProofOfEncryption();
     }
-}
+    else {
+        encryptionData = publisherDB.getEncryptionData()[requestAck];
+    }
 
-// 시간 지연 계산
-var count =1;
-function calTimeLate(existingTime, previousTime, newTime) {
-    var alpha = 0.2;
-    var temp = newTime - previousTime;
+    var output = {responseBlk: requestAck, encryptionData: encryptionData, id: id}
+    console.log("resBlK   : ", requestAck);
 
-    var newTimeLate = alpha * temp + (1-alpha) * existingTime;
-    submitData.setPublisherTimeLate(newTimeLate);
-    submitData.setPublisherPreviousTime(newTime);
-
-    console.log("Publisher " + count + "번째 timeLate : " + newTimeLate + "ms");
-    count ++;
-}
-
-// 시간 지연 체크
-function checkTimeLate(){
-
+    if (login_ids[messageFrom]) {
+        io.sockets.connected[login_ids[messageFrom]].emit(eventType, output);
+    }
+    else {
+        console.log("상대방을 찾을 수 없습니다.");
+    }
 }

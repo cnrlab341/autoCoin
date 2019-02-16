@@ -1,5 +1,5 @@
 var connection = require('../connection/connect');
-var database = require('../database/temp')
+var database = require('../database/consumer')
 
 var register = function (req, res) {
     console.log("register 접근");

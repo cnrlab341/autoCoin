@@ -9,7 +9,7 @@ var deposit = "100";
 var id = 1001;
 
 var currentTime;
-var previousTime;
+var initialTime;
 var timeLate; // 시간 지연
 // var state = 0; // 현재까지 진행한 거래 상태 저장
 // var blockCount;
@@ -44,15 +44,14 @@ function connectToServer() {
         // consumer쪽에서 block count와 priceperBlock 요구
         socket.emit('setting', output);
         currentTime = new Date();
-        previousTime = Number(currentTime);
+        initialTime = Number(currentTime);
         // publisher에게 block count와 pricePerBlock 획득
 
     });
     socket.on('setting', function (result) {
         currentTime = new Date();
-        timeLate = Number(currentTime) - previousTime;
 
-        var message = {blockCount : result.blockCount, pricePerBlock : result.pricePerBlock, rest : result.rest, id : id,  timeLate : timeLate, previousTime : Number(currentTime)};
+        var message = {blockCount : result.blockCount, pricePerBlock : result.pricePerBlock, rest : result.rest, id : id,  previousTime : initialTime, newTime : Number(currentTime)};
 
         setInitialState("setInitialState", message)
     });

@@ -1,4 +1,4 @@
-var database = require('../database/temp')
+var database = require('../database/consumer')
 var connection = require('../connection/connect');
 
 

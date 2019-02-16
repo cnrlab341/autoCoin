@@ -1,4 +1,5 @@
-var database = require('../database/temp');
+var publisherDB = require('../database/publisher');
+var connect = require('../connection/connect');
 var fs = require('fs');
 var keyhex = "8479768f48481eeb9c8304ce0a58481eeb9c8304ce0a5e3cb5e3cb58479768f4"; //length 32 추후에 publisher에게 등록하게끔
 var iv;
@@ -9,24 +10,24 @@ module.exports = {
         fs.readFile(path, function (err, data) {
             var input = new Buffer(data);
             splitData(input, function (firstData, remainingData) {
-                console.log('firstData : ' + firstData);
 
                 var proofOfEncryption = encryptAES(firstData);
-                database.setProofOfEncryption(proofOfEncryption);
+                publisherDB.setProofOfEncryption(proofOfEncryption);
 
                 var encryptionData;
                 for(var i=0;i<remainingData.length;i++){
-                    encryptAES(remainingData[i]);
-                        encryptionData +=result;
+                    publisherDB.setEncryptionData(encryptAES(remainingData[i]));
+                    encryptionData += encryptAES(remainingData[i]);
 
                         if(i==remainingData.length-1){
-                            encryptAES(proofOfEncryption);
-                                var last = result2 + encryptionData;
-                                last = connect.hasher(last);
-                                console.log("hash : ", last);
-                                callback(last);
-                            }
-                    }
+                            (console.log("EncryptionData Length : ", publisherDB.getEncryptionData().length));
+
+                            var last = proofOfEncryption + encryptionData;
+                            last = connect.hasher(last);
+                            console.log("hash : ", last);
+                            callback(last);
+                        }
+                }
             })
         });
     }
@@ -76,6 +77,20 @@ function splitData(input, callback) {
 
     // // 데이터 원하는 byte크기로 자르기
     var remainingData = temp.match(new RegExp('.{1,' + 10000+ '}', 'g'));
+    console.log("aa",remainingData.length)
+
+    var blockCount = remainingData.length + 1;
+    var pricePerBlock = publisherDB.getDeposit() / (blockCount-1); // 몫
+    var rest = publisherDB.getDeposit() - (blockCount-1) * pricePerBlock;
+
+    console.log('firstData : ' + firstData);
+    console.log("blockCount : ", blockCount);
+    console.log("pricePerBlock : ", pricePerBlock);
+    console.log("rest : ", rest);
+
+    publisherDB.setBlockCount(blockCount);
+    publisherDB.setPricePerBlock(pricePerBlock);
+    publisherDB.setRest(rest);
 
     callback(firstData, remainingData);
 }
