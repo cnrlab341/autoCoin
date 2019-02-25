@@ -19,7 +19,12 @@ var blockchain = function(req, res){
     var hash = req.body.hash;
 
 
+    var time = Number(Date.now());
+    console.log("time : ", time);
     connection.registerItem(address, itemprice, loc, size, type, duration, createTime, hash, function (result) {
+        var nextTime = Number(Date.now());
+        console.log("nextTime : ", nextTime);
+        console.log("smartContract시간 : ", nextTime-time);
         console.log("result : ", result);
 
         var r = result[result.length-1];

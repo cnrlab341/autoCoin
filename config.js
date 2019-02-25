@@ -19,7 +19,7 @@ module.exports = {
         {file:'./search', path:'/search/buy', method:'buy', type:'post'},
 
         //===== test =====//
-        {file:'./test', path:'/echo', method:'echo', type:'get'},
+        {file:'./test', path:'/test', method:'test', type:'get'},
         {file:'./test', path:'/socket', method:'socket', type:'get'},
 
         {file:'./mypage', path:'/mypage', method:'mypage', type:'get'},

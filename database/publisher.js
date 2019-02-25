@@ -1,4 +1,5 @@
 // 추후에 계정정보 DB처리
+
 var publisherAccounts = new Array();
 var blockCount =0;
 var pricePerBlock =0;

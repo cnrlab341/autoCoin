@@ -19,6 +19,12 @@ var timeLate; // 시간 지연
 // var requstAck = 0;  // 진행중인 요청 데이터
 // var BP = 0;         // balanceProof
 
+var index =0;
+var jsonCurrentTime;
+var jsonPreviousTime;
+var jsonTimeDelay;
+var splitSize;
+var count;
 
 // 문서 로딩 후 실행
 $(function () {
@@ -31,47 +37,62 @@ $(function () {
 
 // 서버에 연결하는 함수 정의
 function connectToServer() {
+
+    splitSize = $('#splitSize').val();
+    count = $('#count').val();
+
+    console.log('splitSize :' ,splitSize)
+    console.log('count :' ,count)
+
     var options = {'forceNew' : true};
     var url = 'http://' + host + ':' + port;
-    var setting_parameter = publisher + "//" + content_name + "mp4";
+
 
     socket = io.connect(url, options);
+
     socket.on('connect', function () {
         // println('웹 소켓 서버에 연결되었습니다.', + url);
 
-        var output = { setting_parameter : setting_parameter, from : consumer, deposit : deposit};
+        var output = {splitSize : splitSize, from : consumer, deposit : deposit};
 
         // consumer쪽에서 block count와 priceperBlock 요구
-        socket.emit('setting', output);
+        socket.emit('test_setting', output);
         currentTime = new Date();
         initialTime = Number(currentTime);
         // publisher에게 block count와 pricePerBlock 획득
 
     });
-    socket.on('setting', function (result) {
+    socket.on('test_setting', function (result) {
         currentTime = new Date();
+        jsonPreviousTime = Number(currentTime);
+        // console.log('test_setting jsonPreviousTime : ' , jsonPreviousTime);
 
         var message = {blockCount : result.blockCount, pricePerBlock : result.pricePerBlock, rest : result.rest, id : id,  previousTime : initialTime, newTime : Number(currentTime)};
 
         setInitialState("setInitialState", message)
     });
 
-    socket.on('submit', function (result) {
-        console.log("responseData : ", result);
+    socket.on('test_submit', function (result) {
+        // console.log("responseData : ", result);
+        //
+        // console.log('test_submit jsonPreviousTime : ' , jsonPreviousTime);
+        // console.log('test_submit jsonCurrentTime : ' , jsonCurrentTime);
+        // console.log('test_submit jsonTimeDelay : ' , jsonTimeDelay);
 
         currentTime = new Date();
-        var message = {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, newTime : Number(currentTime)};
+        jsonPreviousTime = Number(currentTime);
+
+        var message = {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, newTime : Number(currentTime), jsonTimeDelay : jsonTimeDelay};
 
         calState("calState", message);
     });
 
-    socket.on('last', function (result) {
-        console.log("lastData : ", result);
+    socket.on('test_last', function (result) {
+        // console.log("lastData : ", result);
 
-        currentTime = new Date();
-        var message = {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, newTime : Number(currentTime)};
+        var message = {count: index, id: result.id};
 
-        lastEvent("last", message);
+        storeCsvFile("storeCsvFile", message);
     })
 
     socket.on('disconnect', function () {
@@ -87,14 +108,19 @@ function setInitialState(method, message) {
         success: function(data) {
             console.log('정상 응답을 받았습니다.');
             console.log(data.result);
+
+            jsonCurrentTime = Number(new Date());
+
             // id : id, , from : consumer
             if(socket == undefined){
                 alert('Not connected to Publisher');
                 return;
             }
 
+
+
             var output = {requestAck: data.result.requestAck, BP : data.result.BP, id : data.result.id, from : consumer};
-            socket.emit('submit', output);
+            socket.emit('test_submit', output);
         },
         error: function(data) {
             console.log('에러 응답을 받았습니다.');
@@ -111,15 +137,23 @@ function calState(method, message){
             console.log('정상 응답을 받았습니다.');
             console.log(data.result);
 
+            jsonCurrentTime = Number(new Date());
+
+            // console.log('calState jsonCurrentTime : ' , jsonCurrentTime);
+
+            jsonTimeDelay = jsonCurrentTime - jsonPreviousTime;
+            // console.log('setInitialState jsonCurrentTime : ' , jsonCurrentTime);
+
             if(socket == undefined){
                 alert('Not connected to Publisher');
                 return;
             }
+
             var output = {requestAck: data.result.requestAck, BP : data.result.BP, id : data.result.id, from : consumer};
 
-            socket.emit('submit', output);
+            socket.emit('test_submit', output);
 
-            },
+        },
         error: function(data) {
             console.log('에러 응답을 받았습니다.');
             console.dir(data);
@@ -128,7 +162,7 @@ function calState(method, message){
     });
 }
 
-function lastEvent(method, message){
+function storeCsvFile(method, message){
     $.jsonRPC.request(method, {
         id: message.id,
         params: [message],
@@ -136,15 +170,29 @@ function lastEvent(method, message){
             console.log('정상 응답을 받았습니다.');
             console.log(data.result);
 
-            if(data.result.BP != undefined){
-                if(socket == undefined){
-                    alert('Not connected to Publisher');
-                    return;
-                }
-                var output = {BP : data.result.BP, from : consumer};
-
-                socket.emit('last', output);
+            if(socket == undefined){
+                alert('Not connected to Publisher');
+                return;
             }
+
+
+            if(index == count-1){
+                console.log("완료");
+            }else{
+                console.log("반복횟수 : " + (count-1) - index + "남음");
+                index ++;
+                var output = {splitSize : splitSize, from : consumer, deposit : deposit};
+
+                currentTime = new Date();
+                initialTime = Number(currentTime);
+                timeLate = 0;
+                jsonCurrentTime = 0;
+                jsonPreviousTime = 0;
+                jsonTimeDelay = 0;
+
+                socket.emit('test_setting', output);
+            }
+
         },
         error: function(data) {
             console.log('에러 응답을 받았습니다.');

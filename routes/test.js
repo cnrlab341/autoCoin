@@ -1,5 +1,5 @@
-var echo = function (req, res) {
-    console.log("/test/echo접근");
+var test = function (req, res) {
+    console.log("/test접근");
     res.render("test.ejs");
 }
 
@@ -8,5 +8,5 @@ var socket = function (req, res){
     res.render("socket.ejs")
 }
 
-module.exports.echo = echo;
+module.exports.test = test;
 module.exports.socket = socket;

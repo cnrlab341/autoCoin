@@ -1,61 +1,141 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Echo 테스트</title>
 
-    <script src="/public/vendor/jquery/jquery.min.js"></script>
-    <script src="/public/vendor/jquery/jquery-jsonrpc.js"></script>
-    <script>
-        $(function() {
-            $.jsonRPC.setup({
-                endPoint : 'http://localhost:3000/api',
-                namespace : ''
-            });
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-            $("#requestButton").click(function() {
-                var message = $("#messageInput").val();
-                console.log("message", message)
+    <title>Clean Blog - Start Bootstrap Theme</title>
 
-                var method = 'echo';
-                $.jsonRPC.request(method, {
-                    id: 1001,
-                    params: [message],
-                    success: function(data) {
-                        println('정상 응답을 받았습니다.');
-                        console.dir(data);
+    <!-- Bootstrap core CSS -->
+    <link href="../public/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-                        println(data.result);
-                    },
-                    error: function(data) {
-                        println('에러 응답을 받았습니다.');
-                        console.dir(data);
+    <!-- Custom fonts for this template -->
+    <link href="../public/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
-                        println(data.error.message);
-                    }
-                });
+    <!-- Custom styles for this template -->
+    <link href="../public/css/clean-blog.min.css" rel="stylesheet">
 
-                println('[' + method + '] method로 요청을 보냈습니다.');
-            });
-        });
-
-        function println(data) {
-            $("#results").append('<p>' + data + '</p>');
-        }
-    </script>
 
 </head>
+
 <body>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand" href="/">CnrLab</a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/register">register</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/search">search</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/mypage">mypage</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
-<h3>JSON-RPC Echo 테스트</h3>
-<br>
-<!--<textarea name="messageInput" id="messageInput"></textarea>-->
-<input type="file" id="messageInput">
-<br>
-<input type="button" name="requestButton" id="requestButton" value="요청하기" />
-<br>
-<p>결과<p>
-<div id="results"></div>
+<!-- Page Header -->
+<header class="masthead" style="background-image: url('../public/img/contact-bg.jpg')">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto">
+                <div class="page-heading">
+                    <h1>myPage</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content -->
+<div class="container">
+    <div class="row">
+        <div id="result" class="col-lg-8 col-md-10 mx-auto">
+            <h1>test</h1><br>
+            <h3>splitSize</h3>
+            0 -> 1KB <br>
+            1 -> 5KB <br>
+            2 -> 10KB <br>
+            3 -> 15KB <br>
+            4 -> 20KN <br>
+            <br>
+            splitSize : <input id="splitSize" type="text"> <br><br>
+            count : <input id="count" type="text">
+            <br><br><br>
+            <button onclick="connectToServer()">request</button> <br></div>
+    </div>
+</div>
 
+<hr>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto">
+                <ul class="list-inline text-center">
+                    <li class="list-inline-item">
+                        <a href="#">
+                  <span class="fa-stack fa-lg">
+                    <i class="fas fa-circle fa-stack-2x"></i>
+                    <i class="fab fa-twitter fa-stack-1x fa-inverse"></i>
+                  </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="#">
+                  <span class="fa-stack fa-lg">
+                    <i class="fas fa-circle fa-stack-2x"></i>
+                    <i class="fab fa-facebook-f fa-stack-1x fa-inverse"></i>
+                  </span>
+                        </a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="#">
+                  <span class="fa-stack fa-lg">
+                    <i class="fas fa-circle fa-stack-2x"></i>
+                    <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                  </span>
+                        </a>
+                    </li>
+                </ul>
+                <p class="copyright text-muted">Copyright &copy; Your Website 2018</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap core JavaScript -->
+<script src="../public/vendor/jquery/jquery.min.js"></script>
+<script src="../public/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<!-- Contact Form JavaScript -->
+<script src="../public/js/jqBootstrapValidation.js"></script>
+<script src="../public/js/contact_me.js"></script>
+
+<!-- Custom scripts for this template -->
+<script src="../public/js/clean-blog.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="../public/js/socket_test.js"></script>
+<script src="/public/vendor/jquery/jquery-jsonrpc.js"></script
 </body>
+
 </html>

@@ -215,6 +215,9 @@ var login_ids = {};
 var io = socketio.listen(server);
 console.log('socket.ejs.io 요청을 받아들일 준비가 됬습니다.');
 
+var currentSpiltSize;
+var csvFile;
+
 // 클라이언트가 연결했을 때의 이벤트 처리
 io.sockets.on('connection', function (socket) {
     console.log("connection info : ", socket.request.connection._peername);
@@ -223,9 +226,9 @@ io.sockets.on('connection', function (socket) {
     socket.remoteAddress = socket.request.connection._peername.address;
     socket.remotePort = socket.request.connection._peername.port;
 
+
     socket.on('setting', function (message) {
-        // console.log("setting socket 접근");
-        console.log("message : ", message);
+            console.log("setting socket 접근");
 
         login_ids[message.from] = socket.id;
         socket.login_id = message.from;
@@ -236,6 +239,9 @@ io.sockets.on('connection', function (socket) {
         var blockCount =  publisherDB.getBlockCount();
         var pricePerBlock = publisherDB.getPricePerBlock();
         var rest = publisherDB.getRest();
+        console.log("blockCount : ", blockCount);
+        console.log("pricePerBlock : ", pricePerBlock);
+        console.log("rest: ", rest);
 
         var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest : rest};
 
@@ -273,8 +279,86 @@ io.sockets.on('connection', function (socket) {
         // var output = {BP : data.result.BP, from : consumer};
         publisherDB.setBP(message.BP);
     });
-});
 
+
+
+
+    //test
+
+    socket.on('test_setting', function (message) {
+        console.log("setting socket 접근");
+
+        login_ids[message.from] = socket.id;
+        socket.login_id = message.from;
+
+        console.log("접속한 클라이언트 ID 개수 : %d", Object.keys(login_ids).length);
+
+
+        // test size setting
+        currentSpiltSize = message.splitSize;
+        console.log("splitSize : ", currentSpiltSize);
+
+        console.log(currentSpiltSize + "번째 요청 ========");
+
+
+        // block count 블록당 가격 체크
+        var blockCount =   test[currentSpiltSize].test_blockCount;
+        var pricePerBlock = test[currentSpiltSize].test_pricePerBlock;
+        var rest = test[currentSpiltSize].test_rest;
+
+        console.log("blockCount : ", blockCount);
+        console.log("pricePerBlock : ", pricePerBlock);
+        console.log("rest: ", rest);
+
+        csvFile = "splitSize\t" + currentSpiltSize + "\n totalAck\t " + blockCount + "\n\nAck\tPublisher Time Delay\n";
+
+        var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest : rest};
+
+        io.sockets.connected[login_ids[message.from]].emit('test_setting', output);
+
+        // 시간체크
+        publisherDB.setPublisherPreviousTime(Number(Date.now()));
+    });
+
+
+    socket.on('test_submit', function (message) {
+        // console.log("submit socket 접근");
+        // console.log(message);
+
+        var blockCount =  test[currentSpiltSize].test_blockCount;
+
+        if(message.requestAck==0){
+            test_submitConsumer(currentSpiltSize, message.from, message.requestAck, message.id, 'test_submit');
+        }
+
+        else if(message.requestAck==blockCount-1){
+            console.log("======== last BlK ========");
+            publisherDB.setBP(message.BP);
+            test_submitConsumer(currentSpiltSize, message.from, message.requestAck, message.id, 'test_last');
+        }
+        else {
+            publisherDB.setBP(message.BP);
+            test_submitConsumer(currentSpiltSize, message.from, message.requestAck, message.id, 'test_submit');
+        }
+
+    });
+
+    // BP가 deposit보다 작을때 (cause rest)
+    socket.on('test_last', function (message) {
+        // var output = {BP : data.result.BP, from : consumer};
+        publisherDB.setBP(message.BP);
+    });
+});
+// var model_1 = {
+//     'split' : 1,
+//     'test_blockCount' : 0,
+//     'test_pricePerBlock' : 0.0014648365974775513,
+//     'test_rest' : 0,
+//     'test_proofOfEncryption' : 0,
+//     'test_encryptionData' : new Array(),
+//     'test_deposit' : 100,
+//     'test_BP' : ""
+// }
 function submitConsumer(messageFrom, requestAck, id, eventType) {
     var currentTime = Date.now();
     var previousTime = publisherDB.getPublisherPreviousTime();
@@ -298,4 +382,252 @@ function submitConsumer(messageFrom, requestAck, id, eventType) {
     else {
         console.log("상대방을 찾을 수 없습니다.");
     }
+}
+
+var count =0;
+
+function test_submitConsumer(index, messageFrom, requestAck, id, eventType) {
+    console.log("requestAck : ", requestAck);
+    console.log("count :", index);
+    console.log("prooofEncryption" , test[index].test_proofOfEncryption);
+
+    var currentTime = Date.now();
+    var previousTime = publisherDB.getPublisherPreviousTime();
+    var timeLate = publisherDB.getPublisherTimeLate();
+    modulesTimeLate.setTestPublisherTimeLate(requestAck, timeLate, previousTime, Number(currentTime), function (result) {
+        csvFile += result;
+
+        var encryptionData;
+        if (requestAck == 0) {
+            encryptionData = test[index].test_proofOfEncryption;
+        }
+        else {
+            encryptionData = test[index].test_encryptionData[requestAck-1];
+        }
+
+        var output = {responseBlk: requestAck, encryptionData: encryptionData, id: id}
+        console.log("resBlK   : ", requestAck);
+
+
+
+        if (eventType == "test_last") {
+            var filePath = './' + count + '요청 PublisherTimeDelay.csv';
+            fs.writeFile(filePath, csvFile, 'utf8', function (err, result) {
+                count ++;
+                if (err){
+                    console.log("File err : ", err)
+                } else
+                    console.log("File result :", result);
+                if (login_ids[messageFrom]) {
+                    io.sockets.connected[login_ids[messageFrom]].emit(eventType, output);
+                }
+                else {
+                    console.log("상대방을 찾을 수 없습니다.");
+                }
+            });
+
+        }else{
+            if (login_ids[messageFrom]) {
+                io.sockets.connected[login_ids[messageFrom]].emit(eventType, output);
+            }
+            else {
+                console.log("상대방을 찾을 수 없습니다.");
+            }
+        }
+
+    });
+}
+
+
+
+
+// test
+
+// model split : 1K
+var model_1 = {
+    'split' : 1,
+    'test_blockCount' : 0,
+    'test_pricePerBlock' : 0.0014648365974775513,
+    'test_rest' : 0,
+    'test_proofOfEncryption' : 0,
+    'test_encryptionData' : new Array(),
+    'test_deposit' : 100,
+    'test_BP' : ""
+}
+
+// model split : 5K
+var model_5 = {
+    'split' : 5,
+    'test_blockCount' : 0,
+    'test_pricePerBlock' : 0.007323324789454412,
+    'test_rest' : 0,
+    'test_proofOfEncryption' : 0,
+    'test_encryptionData' : new Array(),
+    'test_deposit' : 100,
+    'test_BP' : ""
+}
+
+// model split : 10K
+var model_10 = {
+    'split' : 10,
+    'test_blockCount' : 0,
+    'test_pricePerBlock' : 0.014645577035735208,
+    'test_rest' : 0,
+    'test_proofOfEncryption' : 0,
+    'test_encryptionData' : new Array(),
+    'test_deposit' : 100,
+    'test_BP' : ""
+}
+
+// model split : 15K
+var model_15 = {
+    'split' : 15,
+    'test_blockCount' : 0,
+    'test_pricePerBlock' : 0.021963540522732264,
+    'test_rest' : 0,
+    'test_proofOfEncryption' : 0,
+    'test_encryptionData' : new Array(),
+    'test_deposit' : 100,
+    'test_BP' : ""
+}
+
+// model split : 20K
+var model_20 = {
+    'split' : 20,
+    'test_blockCount' : 0,
+    'test_pricePerBlock' : 0.029282576866764276,
+    'test_rest' : 0,
+    'test_proofOfEncryption' : 0,
+    'test_encryptionData' : new Array(),
+    'test_deposit' : 100,
+    'test_BP' : ""
+}
+
+
+var test = new Array();
+test.push(model_1);
+test.push(model_5);
+test.push(model_10);
+test.push(model_15);
+test.push(model_20);
+
+
+var keyhex = "8479768f48481eeb9c8304ce0a58481eeb9c8304ce0a5e3cb5e3cb58479768f4"; //length 32
+
+var blockSize = 16;
+
+
+function encryptAES(input) {
+    try {
+        var iv = require('crypto').randomBytes(16);
+        // console.info('iv',iv);
+        var data = new Buffer(input).toString('binary');
+        // console.info('data',data);
+
+        key = new Buffer(keyhex, "hex");
+        //console.info(key);
+        var cipher = require('crypto').createCipheriv('aes-256-cbc', key, iv);
+        // UPDATE: crypto changed in v0.10
+
+        // https://github.com/joyent/node/wiki/Api-changes-between-v0.8-and-v0.10
+
+        var nodev = process.version.match(/^v(\d+)\.(\d+)/);
+
+        var encrypted;
+
+        if( nodev[1] === '0' && parseInt(nodev[2]) < 10) {
+            encrypted = cipher.update(data, 'binary') + cipher.final('binary');
+        } else {
+            encrypted =  cipher.update(data, 'utf8', 'binary') +  cipher.final('binary');
+        }
+
+        var encoded = new Buffer(iv, 'binary').toString('hex') + new Buffer(encrypted, 'binary').toString('hex');
+
+        return encoded;
+    } catch (ex) {
+        // handle error
+        // most likely, entropy sources are drained
+        console.error(ex);
+    }
+}
+
+function decryptAES(encoded) {
+    var combined = new Buffer(encoded, 'hex');
+
+    key = new Buffer(keyhex, "hex");
+
+    // Create iv
+    var iv = new Buffer(16);
+
+    combined.copy(iv, 0, 0, 16);
+    edata = combined.slice(16).toString('binary');
+
+    // Decipher encrypted data
+    var decipher = require('crypto').createDecipheriv('aes-256-cbc', key, iv);
+
+    // UPDATE: crypto changed in v0.10
+    // https://github.com/joyent/node/wiki/Api-changes-between-v0.8-and-v0.10
+
+    var nodev = process.version.match(/^v(\d+)\.(\d+)/);
+
+    var decrypted, plaintext;
+    if( nodev[1] === '0' && parseInt(nodev[2]) < 10) {
+        decrypted = decipher.update(edata, 'binary') + decipher.final('binary');
+        plaintext = new Buffer(decrypted, 'binary').toString('utf8');
+    } else {
+        plaintext = (decipher.update(edata, 'binary', 'utf8') + decipher.final('utf8'));
+    }
+    return plaintext;
+}
+
+function init(input, count, callback) {
+    var first_data = input.toString('base64', 0, 12);
+    // console.log(first_data.length) // 16, AAAAIGZ0eXBtcDQy
+    // console.log(new Buffer(first_data))
+    var last_data = input.toString('base64', 12, input.length);
+
+    var temp = last_data.match(new RegExp('.{1,' + splitSize[count]+ '}', 'g'));
+    console.log("=====" + splitSize[count] + "=====")
+    test[count].test_blockCount = temp.length + 1;
+    console.log("split length " + test[i].test_blockCount) // 4539
+
+    var outPut = {first_data : first_data, last_data : temp};
+    callback(outPut);
+}
+
+function encryption_for(count, first_data, last_data, callback) {
+    var hw = new Array();
+
+    for(var i=0;i<last_data.length;i++) {
+        var temp =encryptAES(last_data[i]);
+        hw.push(temp);
+        test[count].test_encryptionData.push(temp);
+
+        if(i==last_data.length-1){
+            var proofOfEncryption = encryptAES(first_data);
+            test[count].test_proofOfEncryption = proofOfEncryption
+            console.log("proofOfEncryption : ", test[count].test_proofOfEncryption);
+
+            var output = {hw : hw, proofOfEncryption : proofOfEncryption};
+
+            // console.log(proofOfEncryption.length)
+            console.log("encryption 1per size" + test[count].test_encryptionData[0].length)
+            console.log("encryption  length" + test[count].test_encryptionData.length)
+            callback(output);
+        }
+    }
+}
+
+
+var splitSize = [500, 2500, 5000, 7500, 10000];
+
+for (var i =0; i<5;i++){
+
+    var input = new Buffer(52428800);
+
+    init(input, i, function (result) {
+        encryption_for(i, result.first_data, result.last_data, function (result2) { // var output = {hw : hw, proofOfEncryption : proofOfEncryption};
+            console.log('성공');
+        })
+    })
 }

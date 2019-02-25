@@ -11,6 +11,19 @@ var clientPreviousTime =0;
 var clientTimeLate =0; // 시간 지연
 var deposit =100;
 
+module.exports.clear = function () {
+    blockCount = 0;
+    pricePerBlock = 0;
+    rest =0;
+    proofOfEncryption ="";
+    encryptionData = new Array();
+    balance = 0;         // balanceProof
+    requestAck = 0;  // 진행중인 요청 데이터
+    clientPreviousTime =0;
+    clientTimeLate =0; // 시간 지연
+    deposit =100;
+};
+
 // accounts.push({privateKey : "0x13ba66f8bc43c7851249e742bd92ccc495b6aa75a6636fbc6e77176a5fdd3dfe", address : "0xec58179D7BD7CBEd4D1a76376A1c961C61548071", password : "1234"});
 consumerAccounts.push({privateKey : "0xae950f323a3155496625b2936f84750513488cd85e0ecc1b887dcd2f35999e84", address : "0x22FA6ea1e3AfE958b06115291791d70f71377e64", password : "1234"});
 
@@ -22,6 +35,18 @@ module.exports.setAccounts = function (name, address, password) {
 module.exports.getAccounts = function () {
     return consumerAccounts;
 };
+
+// module.exports.setInitailCsvFile = function (content) {
+//     csvFile += content + "\n\nAck\tconsumerTimeDelay\tBPTimeDelay\tjson-RPCTimeDelay\n";
+// };
+//
+// module.exports.setCsvFile = function (content) {
+//
+// };
+//
+// module.exports.getCsvFile = function () {
+//     return csvFile;
+// };
 
 module.exports.setInitialdata = function (_blockCount, _pricePerBlock, _rest) {
     blockCount = _blockCount;
