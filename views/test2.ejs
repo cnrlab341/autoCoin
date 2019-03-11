@@ -1,0 +1,53 @@
+<html>
+<head>
+    <script src="/public/vendor/jquery/jquery.min.js"></script>
+    <script src="/public/vendor/jquery/jquery-jsonrpc.js"></script>
+
+</head>
+<body>
+
+<button onclick="callb()">request</button>
+
+<script>
+    var currentTime;
+    var newTime;
+    $(function () {
+        $.jsonRPC.setup({
+            endPoint : 'http://127.0.0.1:3000/api',
+            namespace : ''
+        });
+    });
+
+    function callb() {
+        currentTime = new Date();
+
+        var buffer = new ArrayBuffer(5120);
+        console.log("pre", currentTime.getTime())
+        var a = 'test';
+        console.log("asd", buffer.byteLength)
+        var message = buffer;
+        test(a, message);
+    }
+
+    function test(a, message) {
+        $.jsonRPC.request(a, {
+            id: 1001,
+            params: [message],
+            success: function(data) {
+                console.log('정상 응답을 받았습니다.');
+                console.log(data.result);
+                newTime = new Date();
+                console.log("newTime", newTime.getTime())
+                console.log("시간지연", Number(newTime) - Number(currentTime))
+
+            },
+            error: function(data) {
+                console.log('에러 응답을 받았습니다.');
+                console.dir(data);
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

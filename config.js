@@ -20,7 +20,8 @@ module.exports = {
 
         //===== test =====//
         {file:'./test', path:'/test', method:'test', type:'get'},
-        {file:'./test', path:'/socket', method:'socket', type:'get'},
+        {file:'./test', path:'/test/request', method:'request', type:'post'},
+        {file:'./test2', path:'/test2', method:'test2', type:'get'},
 
         {file:'./mypage', path:'/mypage', method:'mypage', type:'get'},
         {file:'./mypage', path:'/mypage/completeChannel', method:'completeChannel', type:'post'},

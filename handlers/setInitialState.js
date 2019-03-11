@@ -11,9 +11,9 @@ var setInitialState = function(params, callback){
     consumerDB.clear();
 
     // setInitialState
-    console.log("blockCount : ", params[0].blockCount);
-    console.log("pricePerBlock: ", params[0].pricePerBlock);
-    console.log("rest : ", params[0].rest);
+    // console.log("blockCount : ", params[0].blockCount);
+    // console.log("pricePerBlock: ", params[0].pricePerBlock);
+    // console.log("rest : ", params[0].rest);
 
 
     consumerDB.setInitialdata(params[0].blockCount, params[0].pricePerBlock, params[0].rest);
@@ -27,8 +27,8 @@ var setInitialState = function(params, callback){
 
     callback(null, output);
 
-    console.log("reqAck   : ", '0');
-    console.log( '0' + " BP    : 0");
+    // console.log("reqAck   : ", '0');
+    // console.log( '0' + " BP    : 0");
 };
 
 module.exports = setInitialState;

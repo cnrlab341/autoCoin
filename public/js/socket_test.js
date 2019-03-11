@@ -8,6 +8,7 @@ var content_name = "test";
 var deposit = "100";
 var id = 1001;
 
+var previousTime;
 var currentTime;
 var initialTime;
 var timeLate; // 시간 지연
@@ -66,6 +67,7 @@ function connectToServer() {
         currentTime = new Date();
         jsonPreviousTime = Number(currentTime);
         // console.log('test_setting jsonPreviousTime : ' , jsonPreviousTime);
+        console.log("2번test 시간: ", Number(currentTime));
 
         var message = {blockCount : result.blockCount, pricePerBlock : result.pricePerBlock, rest : result.rest, id : id,  previousTime : initialTime, newTime : Number(currentTime)};
 
@@ -73,16 +75,13 @@ function connectToServer() {
     });
 
     socket.on('test_submit', function (result) {
-        // console.log("responseData : ", result);
-        //
-        // console.log('test_submit jsonPreviousTime : ' , jsonPreviousTime);
-        // console.log('test_submit jsonCurrentTime : ' , jsonCurrentTime);
-        // console.log('test_submit jsonTimeDelay : ' , jsonTimeDelay);
-
         currentTime = new Date();
         jsonPreviousTime = Number(currentTime);
+        console.log("5번test 시간: ", jsonPreviousTime);
 
-        var message = {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, newTime : Number(currentTime), jsonTimeDelay : jsonTimeDelay};
+        // console.log(result.responseBlk + "요청 test previousTime : ", previousTime);
+        // console.log("test nowTime : ", Number(currentTime));
+        var message = {responseBlk : result.responseBlk, encryptionData: result.encryptionData, id: result.id, previousTime : previousTime, newTime : Number(currentTime), jsonTimeDelay : jsonTimeDelay};
 
         calState("calState", message);
     });
@@ -109,15 +108,18 @@ function setInitialState(method, message) {
             console.log('정상 응답을 받았습니다.');
             console.log(data.result);
 
+
             jsonCurrentTime = Number(new Date());
+            console.log("jsonCurrentTime: ", jsonCurrentTime);
+            console.log("jsonPreviousTime: ", jsonPreviousTime);
+            jsonTimeDelay = jsonCurrentTime - jsonPreviousTime;
 
             // id : id, , from : consumer
             if(socket == undefined){
                 alert('Not connected to Publisher');
                 return;
             }
-
-
+            previousTime = Number(currentTime);
 
             var output = {requestAck: data.result.requestAck, BP : data.result.BP, id : data.result.id, from : consumer};
             socket.emit('test_submit', output);
@@ -141,13 +143,17 @@ function calState(method, message){
 
             // console.log('calState jsonCurrentTime : ' , jsonCurrentTime);
 
+            console.log("jsonCurrentTime: ", jsonCurrentTime);
+            console.log("jsonPreviousTime: ", jsonPreviousTime);
             jsonTimeDelay = jsonCurrentTime - jsonPreviousTime;
             // console.log('setInitialState jsonCurrentTime : ' , jsonCurrentTime);
-
+            // console.log("test jsonCurrentTime : ", jsonCurrentTime);
+            // console.log("test jsonTimeDelay : ", jsonTimeDelay);
             if(socket == undefined){
                 alert('Not connected to Publisher');
                 return;
             }
+            previousTime = Number(currentTime);
 
             var output = {requestAck: data.result.requestAck, BP : data.result.BP, id : data.result.id, from : consumer};
 

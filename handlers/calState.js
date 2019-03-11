@@ -27,8 +27,10 @@ var calState = function (params, callback) {
         var jsonTimeDelay = params[0].jsonTimeDelay;
 
         // test
-        var consumerTimeDelay = params[0].newTime - consumerDB.getClientPreviousTime();
-        console.log(params[0].responseBlk + "요청 consumerTimeLate : " + consumerTimeDelay);
+        var consumerTimeDelay = params[0].newTime - params[0].previousTime;
+        console.log(requestAck + "test consumer privious Time : " +  params[0].previousTime);
+        console.log(requestAck + "test consumer new Time : " +  params[0].newTime);
+        console.log(requestAck + "test consumer TimeLate : ", consumerTimeDelay);
 
         // 시간 지연 계산
         modulesTimeLate.setConsumerTimeLate(requestAck, consumerDB.getClientTimeLate(), consumerDB.getClientPreviousTime(), params[0].newTime);
@@ -48,9 +50,10 @@ var calState = function (params, callback) {
 
                 var BPTimeDelay = BPNewTime - BPPreviousTime;
 
+
                 csvFile.setConsumerDelay(requestAck, consumerTimeDelay, BPTimeDelay, jsonTimeDelay);
 
-                var output = {requestAck : requestAck, BP : BP, id : currentId +1, consumerTimeDelay : consumerTimeDelay, BPTimeDelay : BPTimeDelay};
+                var output = {requestAck : requestAck, BP : BP, id : currentId +1, BPTimeDelay : BPTimeDelay};
 
                 consumerDB.setRequestAck(requestAck);
                 consumerDB.setBalance(balance);
@@ -68,6 +71,8 @@ var calState = function (params, callback) {
                 var BPNewTime = Number(Date.now());
 
                 var BPTimeDelay = BPNewTime - BPPreviousTime;
+                // console.log(requestAck + "test Consumer TimeLate : ", consumerTimeDelay);
+                console.log(requestAck-1 + "test jsonTimeDelay TimeLate : ", jsonTimeDelay);
 
                 csvFile.setConsumerDelay(requestAck, consumerTimeDelay, BPTimeDelay, jsonTimeDelay);
 

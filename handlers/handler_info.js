@@ -13,6 +13,7 @@ var handler_info = [
     , {file:'./setInitialState', method:'setInitialState'}
     , {file: './last', method: 'last'}
     , {file: './storeCsvFile', method : 'storeCsvFile'}
+    , {file: './test', method : 'test'}
 ];
 
 
