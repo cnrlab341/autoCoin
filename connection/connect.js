@@ -268,7 +268,7 @@ module.exports = {
 // });
 //
 // var encodedABI = transfer.encodeABI();
-//
+// //
 // var tx = {
 //     from: '0x22FA6ea1e3AfE958b06115291791d70f71377e64',
 //     gas: 6721975,
@@ -276,8 +276,9 @@ module.exports = {
 // };
 //
 // web3.eth.accounts.signTransaction(tx, "0xae950f323a3155496625b2936f84750513488cd85e0ecc1b887dcd2f35999e84").then(signed => {
+//     // console.log("tran : ", signed)
 //     var tran = web3.eth.sendSignedTransaction(signed.rawTransaction);
-//     // console.log("tran : ", tran.)
+//
 //     tran.catch(function (error) {
 //         console.log(error)
 //     })

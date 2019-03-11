@@ -77,10 +77,12 @@
             3 -> 15KB <br>
             4 -> 20KN <br>
             <br>
-            splitSize : <input id="splitSize" type="text"> <br><br>
-            count : <input id="count" type="text">
-            <br><br><br>
-            <button onclick="connectToServer()">request</button> <br></div>
+            <form action="/test/request" method="post">
+                splitSize : <input name="splitSize" type="text"> <br><br>
+                count : <input name="count" type="text">
+                <br><br><br>
+                <button type="submit">request</button>
+             </form>
     </div>
 </div>
 
@@ -134,7 +136,7 @@
 <!-- Custom scripts for this template -->
 <script src="../public/js/clean-blog.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
-<script src="../public/js/socket_test.js"></script>
+<!--<script src="../public/js/socket_test.js"></script>-->
 <script src="/public/vendor/jquery/jquery-jsonrpc.js"></script
 </body>
 

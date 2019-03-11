@@ -1,5 +1,5 @@
 const express = require('express')
-    , http = require('http')
+    , net = require('net')
     , app = express()
     , port = 3000 || process.env.PORT
     , bodyParser = require('body-parser')
@@ -195,15 +195,6 @@ app.on('close', function () {
     }
 });
 
-// 시작된 서버 객체를 리턴받도록 합니다.
-var server = http.createServer(app).listen(app.get('port'), function(){
-    console.log('서버가 시작되었습니다. 포트 : ' + app.get('port'));
-
-    // 데이터베이스 초기화
-    database.init(app, config);
-    console.log("Express Listening at http://localhost:" + port);
-
-});
 var publisherDB = require('./database/publisher');
 var consumerDB = require('./database/consumer.js');
 var modulesTimeLate = require('./modules/calculateTimeLate');
@@ -211,204 +202,109 @@ var moduleAES = require('./modules/AES-256-cbc');
 
 var login_ids = {};
 
-// socket.io 서버를 시작합니다.
-var io = socketio.listen(server);
-console.log('socket.ejs.io 요청을 받아들일 준비가 됬습니다.');
-
 var currentSpiltSize;
 var csvFile;
 
-// 클라이언트가 연결했을 때의 이벤트 처리
-io.sockets.on('connection', function (socket) {
-    console.log("connection info : ", socket.request.connection._peername);
+var server= net.createServer(function (socket) {
+    console.log(socket.address().address + "connected");
 
-    // 소켓 객체에 클라이언트 Host, Port 정보 속성으로 추가
-    socket.remoteAddress = socket.request.connection._peername.address;
-    socket.remotePort = socket.request.connection._peername.port;
+    socket.setEncoding('utf8');
 
+    socket.on('data', function (data) {
+        console.log('rcv : ', data);
+        var temp = JSON.parse(data.toString());
 
-    socket.on('setting', function (message) {
-            console.log("setting socket 접근");
+        var actionType = temp.actionType;
+        var submitData = temp.submitData;
 
-        login_ids[message.from] = socket.id;
-        socket.login_id = message.from;
+        console.log("actionType : ", actionType);
+        console.log("submitData : ", submitData);
 
-        console.log("접속한 클라이언트 ID 개수 : %d", Object.keys(login_ids).length);
+        if(actionType == 'test_setting'){
+            console.log("test_setting 접근");
+            var currentTime = Number(Date.now());
+            currentSpiltSize = parseInt(submitData.splitSize);
+            var blockCount =   test[currentSpiltSize].test_blockCount;
+            var pricePerBlock = test[currentSpiltSize].test_pricePerBlock;
+            var rest = test[currentSpiltSize].test_rest;
 
-        // block count 블록당 가격 체크
-        var blockCount =  publisherDB.getBlockCount();
-        var pricePerBlock = publisherDB.getPricePerBlock();
-        var rest = publisherDB.getRest();
-        console.log("blockCount : ", blockCount);
-        console.log("pricePerBlock : ", pricePerBlock);
-        console.log("rest: ", rest);
+            console.log("blockCount : ", blockCount);
+            console.log("pricePerBlock : ", pricePerBlock);
+            console.log("rest: ", rest);
 
-        var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest : rest};
-
-        io.sockets.connected[login_ids[message.from]].emit('setting', output);
-
-        // 시간체크
-        publisherDB.setPublisherPreviousTime(Number(Date.now()));
-    });
+            csvFile = "splitSize\t" + currentSpiltSize + "\n totalAck\t " + blockCount + "\n\nAck\tPublisher Time Delay\n";
 
 
-    socket.on('submit', function (message) {
-        // console.log("submit socket 접근");
-        // console.log(message);
+            // 시간체크
+            publisherDB.setPublisherPreviousTime(currentTime);
 
-        var blockCount = publisherDB.getBlockCount();
-
-        if(message.requestAck==0){
-            submitConsumer(message.from, message.requestAck, message.id, 'submit');
+            var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest : rest};
+            var data = {actionType : "test_setting", submitData : output};
+            var buf = Buffer.from(JSON.stringify(data));
+            socket.write(buf);
         }
+        else if(actionType == 'test_submit'){
+            console.log("test_submit 접근");
+            var currentTime = Number(Date.now());
 
-        else if(message.requestAck==blockCount-1){
-            console.log("======== last BlK ========");
-            publisherDB.setBP(message.BP);
-            submitConsumer(message.from, message.requestAck, message.id, 'last');
+            var blockCount =  test[currentSpiltSize].test_blockCount;
+
+            if(submitData.requestAck==0){
+                test_submitConsumer(socket, currentTime, currentSpiltSize, submitData.from, submitData.requestAck, 'test_submit');
+            }
+
+            else if(submitData.requestAck==blockCount-1){
+                console.log("======== last BlK ========");
+                publisherDB.setBP(submitData.BP);
+                test_submitConsumer(socket, currentTime, currentSpiltSize, submitData.from, submitData.requestAck, 'test_last');
+            }
+            else {
+                publisherDB.setBP(submitData.BP);
+                test_submitConsumer(socket, currentTime, currentSpiltSize, submitData.from, submitData.requestAck, 'test_submit');
+            }
+
         }
-        else {
-            publisherDB.setBP(message.BP);
-            submitConsumer(message.from, message.requestAck, message.id, 'submit');
+        else if (actionType == 'test_last') {
+            console.log("test_last 접근");
+            publisherDB.setBP(submitData.BP);
         }
+    })
 
-    });
+    socket.on('close', function () {
+        console.log('client disconnected');
+    })
 
-    // BP가 deposit보다 작을때 (cause rest)
-    socket.on('last', function (message) {
-        // var output = {BP : data.result.BP, from : consumer};
-        publisherDB.setBP(message.BP);
-    });
+})
 
-
-
-
-    //test
-
-    socket.on('test_setting', function (message) {
-        console.log("setting socket 접근");
-
-        login_ids[message.from] = socket.id;
-        socket.login_id = message.from;
-
-        console.log("접속한 클라이언트 ID 개수 : %d", Object.keys(login_ids).length);
-
-
-        // test size setting
-        currentSpiltSize = message.splitSize;
-        console.log("splitSize : ", currentSpiltSize);
-
-        console.log(currentSpiltSize + "번째 요청 ========");
-
-
-        // block count 블록당 가격 체크
-        var blockCount =   test[currentSpiltSize].test_blockCount;
-        var pricePerBlock = test[currentSpiltSize].test_pricePerBlock;
-        var rest = test[currentSpiltSize].test_rest;
-
-        console.log("blockCount : ", blockCount);
-        console.log("pricePerBlock : ", pricePerBlock);
-        console.log("rest: ", rest);
-
-        csvFile = "splitSize\t" + currentSpiltSize + "\n totalAck\t " + blockCount + "\n\nAck\tPublisher Time Delay\n";
-
-        var output = {blockCount : blockCount, pricePerBlock : pricePerBlock, rest : rest};
-
-        io.sockets.connected[login_ids[message.from]].emit('test_setting', output);
-
-        // 시간체크
-        publisherDB.setPublisherPreviousTime(Number(Date.now()));
-    });
-
-
-    socket.on('test_submit', function (message) {
-        // console.log("submit socket 접근");
-        // console.log(message);
-
-        var blockCount =  test[currentSpiltSize].test_blockCount;
-
-        if(message.requestAck==0){
-            test_submitConsumer(currentSpiltSize, message.from, message.requestAck, message.id, 'test_submit');
-        }
-
-        else if(message.requestAck==blockCount-1){
-            console.log("======== last BlK ========");
-            publisherDB.setBP(message.BP);
-            test_submitConsumer(currentSpiltSize, message.from, message.requestAck, message.id, 'test_last');
-        }
-        else {
-            publisherDB.setBP(message.BP);
-            test_submitConsumer(currentSpiltSize, message.from, message.requestAck, message.id, 'test_submit');
-        }
-
-    });
-
-    // BP가 deposit보다 작을때 (cause rest)
-    socket.on('test_last', function (message) {
-        // var output = {BP : data.result.BP, from : consumer};
-        publisherDB.setBP(message.BP);
-    });
+server.listen(3000, function(){
+    console.log('Server listening for connections');
+    database.init(app, config);
 });
-// var model_1 = {
-//     'split' : 1,
-//     'test_blockCount' : 0,
-//     'test_pricePerBlock' : 0.0014648365974775513,
-//     'test_rest' : 0,
-//     'test_proofOfEncryption' : 0,
-//     'test_encryptionData' : new Array(),
-//     'test_deposit' : 100,
-//     'test_BP' : ""
-// }
-function submitConsumer(messageFrom, requestAck, id, eventType) {
-    var currentTime = Date.now();
-    var previousTime = publisherDB.getPublisherPreviousTime();
-    var timeLate = publisherDB.getPublisherTimeLate();
-    modulesTimeLate.setPublisherTimeLate(requestAck, timeLate, previousTime, Number(currentTime));
-
-    var encryptionData;
-    if (requestAck == 0) {
-        encryptionData = publisherDB.getProofOfEncryption();
-    }
-    else {
-        encryptionData = publisherDB.getEncryptionData()[requestAck-1];
-    }
-
-    var output = {responseBlk: requestAck, encryptionData: encryptionData, id: id}
-    console.log("resBlK   : ", requestAck);
-
-    if (login_ids[messageFrom]) {
-        io.sockets.connected[login_ids[messageFrom]].emit(eventType, output);
-    }
-    else {
-        console.log("상대방을 찾을 수 없습니다.");
-    }
-}
 
 var count =0;
 
-function test_submitConsumer(index, messageFrom, requestAck, id, eventType) {
-    console.log("requestAck : ", requestAck);
-    console.log("count :", index);
-    console.log("prooofEncryption" , test[index].test_proofOfEncryption);
+function test_submitConsumer(socket, curentTime, index, messageFrom, requestAck, eventType) {
+    // console.log("requestAck : ", requestAck);
+    // console.log("count :", index);
+    // console.log("prooofEncryption" , test[index].test_proofOfEncryption);
 
-    var currentTime = Date.now();
+    var encryptionData;
+    if (requestAck == 0) {
+        encryptionData = test[index].test_proofOfEncryption;
+    }
+    else {
+        encryptionData = test[index].test_encryptionData[requestAck-1];
+    }
+
+    var output = {responseBlk: requestAck, encryptionData: encryptionData};
+    // console.log("resBlK   : ", requestAck);
+    var data = {actionType : eventType, submitData : output};
+    var buf = Buffer.from(JSON.stringify(data));
     var previousTime = publisherDB.getPublisherPreviousTime();
     var timeLate = publisherDB.getPublisherTimeLate();
-    modulesTimeLate.setTestPublisherTimeLate(requestAck, timeLate, previousTime, Number(currentTime), function (result) {
+
+    modulesTimeLate.setTestPublisherTimeLate(requestAck, timeLate, previousTime, curentTime, function (result) {
         csvFile += result;
-
-        var encryptionData;
-        if (requestAck == 0) {
-            encryptionData = test[index].test_proofOfEncryption;
-        }
-        else {
-            encryptionData = test[index].test_encryptionData[requestAck-1];
-        }
-
-        var output = {responseBlk: requestAck, encryptionData: encryptionData, id: id}
-        console.log("resBlK   : ", requestAck);
-
-
 
         if (eventType == "test_last") {
             var filePath = './' + count + '요청 PublisherTimeDelay.csv';
@@ -416,28 +312,16 @@ function test_submitConsumer(index, messageFrom, requestAck, id, eventType) {
                 count ++;
                 if (err){
                     console.log("File err : ", err)
-                } else
+                } else{
                     console.log("File result :", result);
-                if (login_ids[messageFrom]) {
-                    io.sockets.connected[login_ids[messageFrom]].emit(eventType, output);
-                }
-                else {
-                    console.log("상대방을 찾을 수 없습니다.");
+                    socket.write(buf);
                 }
             });
-
         }else{
-            if (login_ids[messageFrom]) {
-                io.sockets.connected[login_ids[messageFrom]].emit(eventType, output);
-            }
-            else {
-                console.log("상대방을 찾을 수 없습니다.");
-            }
+            socket.write(buf);
         }
-
     });
 }
-
 
 
 

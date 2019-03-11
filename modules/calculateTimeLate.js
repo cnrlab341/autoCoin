@@ -42,14 +42,17 @@ module.exports = {
             alpha = 0.2;
         }
         var temp = newTime - previousTime;
+        console.log(count + "test Publisher privious Time : " +  previousTime);
+        console.log(count + "test Publisher new Time : " +  newTime);
+        console.log(count + "test Publisher TimeLate : ", temp);
         var csvFile = count + "\t" + temp + "\n";
 
         var newTimeLate = alpha * temp + (1-alpha) * existingTimeLate;
-
+        var dd = Number(Date.now())
         publisherDB.setPublisherTimeLate(newTimeLate);
-        publisherDB.setPublisherPreviousTime(newTime);
+        publisherDB.setPublisherPreviousTime(dd);
 
-        console.log("Publisher " + count + "번째 timeLate : " + newTimeLate + "ms");
+        // console.log("Publisher " + count + "번째 timeLate : " + newTimeLate + "ms");
 
         callback(csvFile);
     },
